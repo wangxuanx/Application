@@ -17,19 +17,14 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.example.application.MainActivity;
 import com.example.application.R;
-import com.example.application.http.HttpUtil;
 import com.example.application.http.HttpsUtil;
 import com.example.application.http.SharedPrefUtil;
 import com.example.application.ui.Group.GroupActivity;
 import com.example.application.ui.scan.ScanActivity;
-import com.google.gson.Gson;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
@@ -39,7 +34,6 @@ import java.util.List;
 public class HomeFragment extends Fragment {
 
     private HomeViewModel homeViewModel;
-    private TextView textView;
     private ListView listView;
     private SwipeRefreshLayout swipeRefreshLayout;
 
@@ -178,7 +172,10 @@ public class HomeFragment extends Fragment {
             if(result.getContents() == null) {
                 Toast.makeText(getContext(), "扫描失败！！", Toast.LENGTH_LONG).show();
             } else {
-                textView.setText(result.getContents());
+                String group_name = result.getContents();         //扫描得到到内容
+                Intent intent = new Intent(getActivity(), AddGroupActivity.class);
+                intent.putExtra("groupName", group_name);
+                startActivity(intent);
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
