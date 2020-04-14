@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name">云考勤</string>
+    <string name="title_check">签到</string>
+    <string name="title_leave">请假</string>
+    <string name="title_mine">我的</string>
+    <string name="title_activity_login">云考勤</string>
+    <string name="title_activity_register">注册</string>
+    <string name="prompt_name">请输入用户名</string>
+    <string name="prompt_password">请输入密码</string>
+    <string name="prompt_password_again">请再次输入密码</string>
+    <string name="action_sign_in">登录</string>
+    <string name="action_register">注册</string>
+    <string name="confirm_register">确认注册</string>
+    <string name="action_sign_in_short">Sign in</string>
+
+    <!--人脸识别姿态-->
+    <string name="detect_face_in">把脸移入框内</string>
+    <string name="detect_zoom_in">手机拿近一点</string>
+    <string name="detect_zoom_out">手机拿远一点</string>
+    <string name="detect_head_up">头抬高些</string>
+    <string name="detect_head_down">头放低些</string>
+    <string name="detect_head_left">向左调整下头部角度</string>
+    <string name="detect_head_right">向右调整下头部角度</string>
+    <string name="detect_occ_left_eye">左眼有遮挡</string>
+    <string name="detect_occ_right_eye">右眼有遮挡</string>
+    <string name="detect_occ_nose">鼻子有遮挡</string>
+    <string name="detect_occ_mouth">嘴部有遮挡</string>
+    <string name="detect_left_contour">左脸颊有遮挡</string>
+    <string name="detect_right_contour">右脸颊有遮挡</string>
+    <string name="detect_chin_contour">下巴有遮挡</string>
+    <string name="detect_low_light">光线再亮些</string>
+    <string name="detect_keep">请握稳手机，视线平视手机</string>
+
+    <!-- Preference Titles -->
+
+    <!-- Messages Preferences -->
+
+    <!-- Sync Preferences -->
+</resources>

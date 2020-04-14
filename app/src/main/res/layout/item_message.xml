@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <LinearLayout
+        android:id="@+id/left_message_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/left_message_head"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/default_head"/>
+
+        <TextView
+            android:id="@+id/left_message_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/receive_message"
+            android:text="接收信息"
+            android:gravity="center"
+            android:textSize="14dp"
+            android:textColor="#000"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/right_message_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right">
+
+        <TextView
+            android:id="@+id/right_message_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/send_message"
+            android:text="发送信息"
+            android:gravity="center"
+            android:textSize="14dp"
+            android:textColor="#fff"/>
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/right_message_head"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/default_head"/>
+    </LinearLayout>
+</LinearLayout>

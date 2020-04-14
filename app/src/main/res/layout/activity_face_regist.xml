@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".face.FaceRegistActivity">
+
+    <ImageView
+        android:id="@+id/image_check"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="150dp"
+        android:src="@drawable/face_error"/>
+
+    <TextView
+        android:id="@+id/text_check"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="还未注册人脸信息，点击注册"
+        android:layout_gravity="center"
+        android:layout_marginTop="50dp"
+        android:textSize="20dp"/>
+
+    <Button
+        android:id="@+id/register_check"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:layout_gravity="center"
+        android:text="注册人脸"
+        android:textSize="20dp"
+        android:textColor="#fff"
+        android:background="@color/colorPrimary"/>
+</LinearLayout>

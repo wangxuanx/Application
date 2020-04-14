@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/scan_group"
+        android:icon="@drawable/ic_assignment_black_24dp"
+        android:title="扫一扫"/>
+
+    <item
+        android:id="@+id/search_group"
+        android:icon="@drawable/ic_drafts_black_24dp"
+        android:title="搜索群组"/>
+
+    <item
+        android:id="@+id/face_to_face"
+        android:icon="@drawable/ic_account_circle_black_24dp"
+        android:title="面对面建群"/>
+</menu>
