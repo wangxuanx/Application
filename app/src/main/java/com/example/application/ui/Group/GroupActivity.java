@@ -6,7 +6,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ActionBar;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -35,12 +37,14 @@ public class GroupActivity extends AppCompatActivity {
     private List<Msg> msgList = new ArrayList<>();
     private MsgAdapter msgAdapter;
 
+    private String title;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group);
 
-        String title = getIntent().getStringExtra("name");         //接收群组名称
+        title = getIntent().getStringExtra("name");         //接收群组名称
         setTitle(title);
 
         init();
@@ -100,6 +104,24 @@ public class GroupActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {              //添加menu菜单
+        getMenuInflater().inflate(R.menu.group_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.share_group:
+                Intent intent = new Intent(GroupActivity.this, ShareGroup.class);
+                intent.putExtra("groupName", title);
+                startActivity(intent);
+                break;
+        }
+        return true;
     }
 
     public void init(){

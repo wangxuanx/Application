@@ -19,6 +19,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.application.MainActivity;
 import com.example.application.R;
@@ -38,9 +40,11 @@ public class HomeFragment extends Fragment {
 
     private HomeViewModel homeViewModel;
     private TextView textView;
-    protected ListView listView;
+    private ListView listView;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     private List<Group> GroupList = new ArrayList<>();
+    private GroupAdapter groupAdapter;
 
     public static final int SEARCH = 101;
 
@@ -50,15 +54,23 @@ public class HomeFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_home, container, false);
 
         listView = root.findViewById(R.id.home_list);
+        swipeRefreshLayout = root.findViewById(R.id.swipe_list);
 
         setHasOptionsMenu(true);             /**添加右上角menu*/
+        swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.blue));
 
-        //GroupList = initList();          //显示已加入的群组
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                initList();          //显示已加入的群组
+            }
+        }).start();
+
         Group group = new Group(R.drawable.default_head, "all[i].trim()", "test");
         GroupList.add(group);
 
-        GroupAdapter adapter = new GroupAdapter(getContext(), R.layout.group_item, GroupList);
-        listView.setAdapter(adapter);
+        groupAdapter = new GroupAdapter(getContext(), R.layout.group_item, GroupList);
+        listView.setAdapter(groupAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {       //点击事件
             @Override
@@ -68,6 +80,24 @@ public class HomeFragment extends Fragment {
                 Intent intent = new Intent(getContext(), GroupActivity.class);
                 intent.putExtra("name", group.getGroupName());          //发送群组名称
                 startActivity(intent);
+            }
+        });
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {            //下拉刷新列表
+            @Override
+            public void onRefresh() {
+
+                for(int i = 0; i <= GroupList.size(); i++){
+                    GroupList.remove(i);
+                }
+
+                initList();
+
+                if(GroupList.size() != 0){
+                    groupAdapter = new GroupAdapter(getContext(), R.layout.group_item, GroupList);
+                    listView.setAdapter(groupAdapter);
+                    swipeRefreshLayout.setRefreshing(false);
+                }
             }
         });
 
@@ -106,8 +136,9 @@ public class HomeFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
-    private List<Group> initList() {             //调用api来获取已经加入的群组
-        List<Group> groupList = new ArrayList<>();
+
+
+    private void initList() {             //调用api来获取已经加入的群组
         String user = SharedPrefUtil.getUserName(getContext());
         System.out.println("用户" + user);
         String path = "https://120.26.172.16:8443/AndroidTest/GetUserGroup?user=" + user;       //098F6BCD4621D373CADE4E832627B4F6
@@ -124,7 +155,7 @@ public class HomeFragment extends Fragment {
                     for (int i = 0; i < all.length; i++) {
                         System.out.println("第" + (i + 1) + "个：" + all[i].trim());
                         Group group = new Group(R.drawable.default_head, all[i].trim(), "test");
-                        groupList.add(group);
+                        GroupList.add(group);
                     }
 
                 }
@@ -137,7 +168,6 @@ public class HomeFragment extends Fragment {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return groupList;
     }
 
 

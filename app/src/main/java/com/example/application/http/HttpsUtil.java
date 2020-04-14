@@ -99,8 +99,8 @@ public class HttpsUtil{
                     conn.setSSLSocketFactory(factory);
 
                     conn.setRequestMethod("GET");
-                    conn.setReadTimeout(5000);
-                    conn.setConnectTimeout(5000);
+                    conn.setReadTimeout(3000);
+                    conn.setConnectTimeout(3000);
                     conn.setDoInput(true);
                     //conn.setDoOutput(true);
                     conn.connect();
