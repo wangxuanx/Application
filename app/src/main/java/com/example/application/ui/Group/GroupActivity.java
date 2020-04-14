@@ -1,6 +1,7 @@
 package com.example.application.ui.Group;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ActionBar;
@@ -45,13 +46,22 @@ public class GroupActivity extends AppCompatActivity {
         init();
 
         initMsg();
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
         msgAdapter = new MsgAdapter(msgList);
         recyclerView.setAdapter(msgAdapter);
 
         button.setOnClickListener(new View.OnClickListener() {           //点击发送消息
             @Override
             public void onClick(View view) {
-
+                String string = editText.getText().toString().trim();          //获取需要发送的消息
+                if(!"".equals(string)){
+                    Msg msg = new Msg("user", string, Msg.SEND);
+                    msgList.add(msg);
+                    msgAdapter.notifyItemInserted(msgList.size() - 1);          //有新消息，刷新显示
+                    recyclerView.scrollToPosition(msgList.size() - 1);              //将view定位到最后一行
+                    editText.setText("");             //清空输入
+                }
             }
         });
 

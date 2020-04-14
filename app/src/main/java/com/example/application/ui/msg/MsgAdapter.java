@@ -4,6 +4,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -19,8 +20,8 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.ViewHolder> {
     private List<Msg> msgList;
 
     static class ViewHolder extends RecyclerView.ViewHolder{
-        LinearLayout leftLayout;
-        LinearLayout rightLayout;
+        RelativeLayout leftLayout;
+        RelativeLayout rightLayout;
 
         CircleImageView leftImage;
         CircleImageView rightImage;
@@ -43,7 +44,6 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.ViewHolder> {
         msgList = msgs;
     }
 
-    @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_message, parent, false);
@@ -61,7 +61,7 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.ViewHolder> {
         } else if (msg.getType() == Msg.SEND){           //发送信息显示
             holder.rightLayout.setVisibility(View.VISIBLE);
             holder.leftLayout.setVisibility(View.GONE);
-            holder.leftText.setText(msg.getContent());
+            holder.rightText.setText(msg.getContent());
         }
     }
 
