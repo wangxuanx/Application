@@ -64,6 +64,7 @@ public class HomeFragment extends Fragment {
         GroupList.add(group);
 
         groupAdapter = new GroupAdapter(getContext(), R.layout.group_item, GroupList);
+        groupAdapter.notifyDataSetChanged();
         listView.setAdapter(groupAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {       //点击事件
@@ -88,7 +89,9 @@ public class HomeFragment extends Fragment {
                 initList();
 
                 if(GroupList.size() != 0){
+
                     groupAdapter = new GroupAdapter(getContext(), R.layout.group_item, GroupList);
+                    groupAdapter.notifyDataSetChanged();
                     listView.setAdapter(groupAdapter);
                     swipeRefreshLayout.setRefreshing(false);
                 }
@@ -122,8 +125,9 @@ public class HomeFragment extends Fragment {
                 Intent intent = new Intent(getActivity(), SearchGroupActivity.class);
                 startActivityForResult(intent, SEARCH);
                 break;
-            case R.id.face_to_face:            //面对面建群
-                Toast.makeText(getContext(), "面对面", Toast.LENGTH_SHORT).show();
+            case R.id.face_to_face:            //建群
+                Intent intent1 = new Intent(getActivity(), CreateGroupActivity.class);
+                startActivity(intent1);
                 break;
         }
 

@@ -13,5 +13,5 @@
     <item
         android:id="@+id/face_to_face"
         android:icon="@drawable/ic_account_circle_black_24dp"
-        android:title="面对面建群"/>
+        android:title="创建群聊"/>
 </menu>
