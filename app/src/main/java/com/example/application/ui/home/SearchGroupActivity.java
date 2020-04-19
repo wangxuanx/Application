@@ -2,6 +2,7 @@ package com.example.application.ui.home;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.util.Log;
@@ -58,6 +59,9 @@ public class SearchGroupActivity extends AppCompatActivity {
                         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                             Group group = GroupList.get(i);
                             Toast.makeText(SearchGroupActivity.this, group.getGroupName(), Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(SearchGroupActivity.this, AddGroupActivity.class);
+                            intent.putExtra("groupName", group.getGroupName());
+                            startActivity(intent);
                         }
                     });
                 }
