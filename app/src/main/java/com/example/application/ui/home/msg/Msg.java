@@ -1,4 +1,4 @@
-package com.example.application.ui.msg;
+package com.example.application.ui.home.msg;
 
 public class Msg {
     public static final int RECEIVE = 0;

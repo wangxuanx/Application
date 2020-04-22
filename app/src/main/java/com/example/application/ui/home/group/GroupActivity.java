@@ -1,10 +1,9 @@
-package com.example.application.ui.Group;
+package com.example.application.ui.home.group;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,11 +16,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import com.example.application.R;
-import com.example.application.ui.msg.Msg;
-import com.example.application.ui.msg.MsgAdapter;
+import com.example.application.ui.home.SignInActivity;
+import com.example.application.ui.home.msg.Msg;
+import com.example.application.ui.home.msg.MsgAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,11 +32,14 @@ public class GroupActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private EditText editText;
     private Button button;
-
+    private RelativeLayout faceRelativeLayout;
+    private RelativeLayout handsRelativeLayout;
+    private String title;
     private List<Msg> msgList = new ArrayList<>();
     private MsgAdapter msgAdapter;
 
-    private String title;
+    final int FACE = 100;
+    final int HANDS = 101;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +106,24 @@ public class GroupActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+        faceRelativeLayout.setOnClickListener(new View.OnClickListener() {            //添加人脸签到
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(GroupActivity.this, SignInActivity.class);
+                intent.putExtra("type", FACE);
+                startActivity(intent);
+            }
+        });
+
+        handsRelativeLayout.setOnClickListener(new View.OnClickListener() {            //添加手势签到
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(GroupActivity.this, SignInActivity.class);
+                intent.putExtra("type", HANDS);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -130,6 +150,8 @@ public class GroupActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.rv_chat_list);
         editText = findViewById(R.id.et_content);
         button = findViewById(R.id.rv_sent_button);
+        faceRelativeLayout = findViewById(R.id.rlFace);
+        handsRelativeLayout = findViewById(R.id.rlHands);
     }
 
     private void initMsg(){

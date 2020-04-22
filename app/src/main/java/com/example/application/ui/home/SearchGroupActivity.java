@@ -14,8 +14,10 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.application.R;
-import com.example.application.http.HttpUtil;
 import com.example.application.http.HttpsUtil;
+import com.example.application.ui.home.group.Group;
+import com.example.application.ui.home.group.GroupAdapter;
+import com.example.application.ui.home.group.GroupBean;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package com.example.application.ui.home;
+package com.example.application.ui.home.group;
 
 /**
  * 群组信息类

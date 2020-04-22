@@ -11,7 +11,7 @@
         android:layout_weight="1">
 
         <RelativeLayout
-            android:id="@+id/rlPhoto"
+            android:id="@+id/rlFace"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1">
@@ -37,7 +37,7 @@
         </RelativeLayout>
 
         <RelativeLayout
-            android:id="@+id/rlVideo"
+            android:id="@+id/rlHands"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1">

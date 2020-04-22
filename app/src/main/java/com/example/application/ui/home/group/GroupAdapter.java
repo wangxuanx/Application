@@ -1,4 +1,4 @@
-package com.example.application.ui.home;
+package com.example.application.ui.home.group;
 
 import android.content.Context;
 import android.view.LayoutInflater;

@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#eee"
-    tools:context=".ui.Group.ShareGroup">
+    tools:context=".ui.home.group.ShareGroup">
 
     <ImageView
         android:id="@+id/erweima"

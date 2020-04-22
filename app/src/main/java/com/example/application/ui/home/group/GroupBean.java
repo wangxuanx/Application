@@ -1,4 +1,4 @@
-package com.example.application.ui.home;
+package com.example.application.ui.home.group;
 
 public class GroupBean {
     private String group_list;

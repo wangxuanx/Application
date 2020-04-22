@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -23,8 +22,10 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.example.application.R;
 import com.example.application.http.HttpsUtil;
 import com.example.application.http.SharedPrefUtil;
-import com.example.application.ui.Group.GroupActivity;
-import com.example.application.ui.scan.ScanActivity;
+import com.example.application.ui.home.group.Group;
+import com.example.application.ui.home.group.GroupActivity;
+import com.example.application.ui.home.group.GroupAdapter;
+import com.example.application.ui.home.scan.ScanActivity;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 

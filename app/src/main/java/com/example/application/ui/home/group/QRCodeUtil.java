@@ -1,4 +1,4 @@
-package com.example.application.ui.Group;
+package com.example.application.ui.home.group;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;

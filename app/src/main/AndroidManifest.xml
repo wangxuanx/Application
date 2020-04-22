@@ -20,21 +20,27 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".ui.home.CreateGroupActivity"
-            android:parentActivityName=".MainActivity"></activity>
+        <activity android:name=".ui.home.group.GroupUserActivity"></activity>
+        <activity
+            android:name=".ui.home.SignInActivity"
+            android:parentActivityName=".ui.home.group.GroupActivity"
+            android:screenOrientation="unspecified" />
+        <activity
+            android:name=".ui.home.CreateGroupActivity"
+            android:parentActivityName=".MainActivity" />
         <activity
             android:name=".ui.home.AddGroupActivity"
             android:parentActivityName=".MainActivity" />
         <activity
-            android:name=".ui.Group.ShareGroup"
-            android:parentActivityName=".ui.Group.GroupActivity" />
+            android:name=".ui.home.group.ShareGroup"
+            android:parentActivityName=".ui.home.group.GroupActivity" />
         <activity
-            android:name=".ui.Group.GroupActivity"
+            android:name=".ui.home.group.GroupActivity"
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".ui.home.SearchGroupActivity"
             android:label="搜索群组" />
-        <activity android:name=".ui.scan.ScanActivity" />
+        <activity android:name=".ui.home.scan.ScanActivity" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
