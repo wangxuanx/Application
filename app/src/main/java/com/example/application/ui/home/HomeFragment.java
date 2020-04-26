@@ -64,9 +64,15 @@ public class HomeFragment extends Fragment {
         Group group = new Group(R.drawable.default_head, "all[i].trim()", "test");
         GroupList.add(group);
 
-        groupAdapter = new GroupAdapter(getContext(), R.layout.group_item, GroupList);
-        groupAdapter.notifyDataSetChanged();
-        listView.setAdapter(groupAdapter);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                groupAdapter = new GroupAdapter(getContext(), R.layout.group_item, GroupList);
+                groupAdapter.notifyDataSetChanged();
+                listView.setAdapter(groupAdapter);
+            }
+        });
+
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {       //点击事件
             @Override
@@ -83,9 +89,10 @@ public class HomeFragment extends Fragment {
             @Override
             public void onRefresh() {
 
-                for(int i = 0; i <= GroupList.size(); i++){
+                GroupList.clear();
+                /*for(int i = 0; i <= GroupList.size(); i++){
                     GroupList.remove(i);
-                }
+                }*/
 
                 initList();
 
@@ -94,8 +101,9 @@ public class HomeFragment extends Fragment {
                     groupAdapter = new GroupAdapter(getContext(), R.layout.group_item, GroupList);
                     groupAdapter.notifyDataSetChanged();
                     listView.setAdapter(groupAdapter);
-                    swipeRefreshLayout.setRefreshing(false);
                 }
+
+                swipeRefreshLayout.setRefreshing(false);
             }
         });
 
@@ -146,16 +154,20 @@ public class HomeFragment extends Fragment {
                 @Override
                 public void onSuccess(String s) {
                     System.out.println("群组: " + s);
+                    s = s.trim();
                     //Gson gson = new Gson();
                     //GroupBean groupBean = gson.fromJson(s, GroupBean.class);        //解析json数据
                     //String list = groupBean.getGroup_list();             //获取到搜索到到列表
-                    String[] all = s.split(",");        //将字符分割开
+                    if(!s.equals("")){
+                        String[] all = s.split(",");        //将字符分割开
 
-                    for (int i = 0; i < all.length; i++) {
-                        System.out.println("第" + (i + 1) + "个：" + all[i].trim());
-                        Group group = new Group(R.drawable.default_head, all[i].trim(), "test");
-                        GroupList.add(group);
+                        for (int i = 0; i < all.length; i++) {
+                            System.out.println("第" + (i + 1) + "个：" + all[i].trim());
+                            Group group = new Group(R.drawable.default_head, all[i].trim(), "test");
+                            GroupList.add(group);
+                        }
                     }
+
 
                 }
 

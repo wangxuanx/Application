@@ -41,7 +41,7 @@ public class FaceRegistActivity extends Activity {
                 Intent intent = new Intent(FaceRegistActivity.this, FaceDetectActivity.class);            //启动注册人脸进程
                 startActivity(intent);
 
-                /*new Handler().postDelayed(new Runnable(){
+                new Handler().postDelayed(new Runnable(){
                     public void run() {
                         //execute the task
                         imageView.setImageResource(R.drawable.face_ok);
@@ -49,7 +49,7 @@ public class FaceRegistActivity extends Activity {
                         button.setText("注册完成");
                         button.setEnabled(false);
                     }
-                }, 500);*/
+                }, 500);
 
             }
         });

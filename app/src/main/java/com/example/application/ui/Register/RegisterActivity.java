@@ -36,20 +36,21 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Editable editable_name = username.getText();
-                Editable editable_password = password.getText();
-                Editable editable_password_again = passwordAgain.getText();
+                String editable_password = password.getText().toString().trim();
+                String editable_password_again = passwordAgain.getText().toString().trim();
 
                 if(editable_password.equals(editable_password_again)){
 
-                    String url="https://120.26.172.16:8443/AndroidTest/registUser?registname="+editable_name.toString().trim()+"&password="+ Md5.MD5(editable_password.toString().trim(), "utf-8");
+                    String url="https://120.26.172.16:8443/AndroidTest/registUser?registname="+editable_name+"&password="+ Md5.MD5(editable_password, "utf-8");
                     HttpsUtil.getInstance().get(url, new HttpsUtil.OnRequestCallBack() {
                         @Override
                         public void onSuccess(String s) {
+                            System.out.println(s);
                             if(s.equals("user already exist!")){
                                 Toast.makeText(RegisterActivity.this, "注册用户名已存在，请重新填写！", Toast.LENGTH_SHORT).show();
-                            } else if(s.equals("regist successfully!")){
-                                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-                                startActivity(intent);
+                            } else {
+                                /*Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                                startActivity(intent);*/
                                 finish();
                             }
                         }

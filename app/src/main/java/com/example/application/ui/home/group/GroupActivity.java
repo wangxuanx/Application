@@ -22,6 +22,8 @@ import com.example.application.ui.home.SignInActivity;
 import com.example.application.ui.home.msg.Msg;
 import com.example.application.ui.home.msg.MsgAdapter;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +50,7 @@ public class GroupActivity extends AppCompatActivity {
 
         title = getIntent().getStringExtra("name");         //接收群组名称
         setTitle(title);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         init();
 
@@ -134,12 +137,21 @@ public class GroupActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        System.out.println(item.getItemId());
         switch (item.getItemId()) {
             case R.id.share_group:
                 Intent intent = new Intent(GroupActivity.this, ShareGroup.class);
                 intent.putExtra("groupName", title);
                 startActivity(intent);
                 break;
+            case R.id.group_info:
+                Intent intent1 = new Intent(GroupActivity.this, GroupUserActivity.class);
+                intent1.putExtra("groupName", title);
+                startActivity(intent1);
+                break;
+            case 16908332:
+                finish();
+                return true;
         }
         return true;
     }

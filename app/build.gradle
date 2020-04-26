@@ -73,5 +73,5 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.journeyapps:zxing-android-embedded:3.6.0'             //扫码二维码
     implementation 'com.google.zxing:core:3.4.0'
-    implementation 'com.github.LeonDevLifeLog:GestureLockView:+'
+    implementation 'com.github.LeonDevLifeLog:GestureLockView:0.1.0'
 }
