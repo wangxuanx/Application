@@ -3,6 +3,8 @@ package com.example.application.ui.home.msg;
 public class Msg {
     public static final int RECEIVE = 0;
     public static final int SEND = 1;
+    public static final int RECEIVE_SIGN = 2;
+    public static final int SEND_SIGN = 3;
     private String user;          //发送用户
     private String content;       //消息内容
     private int type;            //接收还是发送

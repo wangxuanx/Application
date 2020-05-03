@@ -1,5 +1,6 @@
 package com.example.application.ui.home.group;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,10 +13,13 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Adapter;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.example.application.R;
 import com.example.application.ui.home.SignInActivity;
@@ -115,7 +119,8 @@ public class GroupActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(GroupActivity.this, SignInActivity.class);
                 intent.putExtra("type", FACE);
-                startActivity(intent);
+                intent.putExtra("group", title);
+                startActivityForResult(intent, FACE);
             }
         });
 
@@ -124,7 +129,15 @@ public class GroupActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(GroupActivity.this, SignInActivity.class);
                 intent.putExtra("type", HANDS);
-                startActivity(intent);
+                intent.putExtra("group", title);
+                startActivityForResult(intent, HANDS);
+            }
+        });
+
+        msgAdapter.setOnItemClickListener(new MsgAdapter.OnItemClickListener() {
+            @Override
+            public void onClick(View v, int position) {
+
             }
         });
     }
@@ -154,6 +167,37 @@ public class GroupActivity extends AppCompatActivity {
                 return true;
         }
         return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode){
+            case FACE:           //从创建人脸返回
+                if(resultCode == 0){
+                    System.out.println("从人脸返回！！！");
+                    Msg msg = new Msg("user", "人脸签到", Msg.SEND_SIGN);
+                    msgList.add(msg);
+                    msgAdapter.notifyItemInserted(msgList.size() - 1);          //有新消息，刷新显示
+                    recyclerView.scrollToPosition(msgList.size() - 1);              //将view定位到最后一行
+                } else {
+                    Toast.makeText(getApplicationContext(), "创建成功！", Toast.LENGTH_SHORT).show();
+                }
+
+                break;
+            case HANDS:           //从创建手势签到返回
+                if (resultCode == 0){
+                    System.out.println("从手势返回！！！");
+                    Msg msg1 = new Msg("user", "手势签到", Msg.SEND_SIGN);
+                    msgList.add(msg1);
+                    msgAdapter.notifyItemInserted(msgList.size() - 1);          //有新消息，刷新显示
+                    recyclerView.scrollToPosition(msgList.size() - 1);              //将view定位到最后一行
+                } else {
+                    Toast.makeText(getApplicationContext(), "创建失败！请重试", Toast.LENGTH_SHORT).show();
+                }
+
+                break;
+        }
     }
 
     public void init(){

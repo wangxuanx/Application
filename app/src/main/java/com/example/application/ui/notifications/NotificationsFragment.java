@@ -14,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,6 +36,8 @@ import com.example.application.face.FaceRegistActivity;
 import com.example.application.http.SharedPrefUtil;
 import com.example.application.ui.login.LoginActivity;
 import com.leon.lib.settingview.LSettingItem;
+import com.tencent.imsdk.TIMCallBack;
+import com.tencent.imsdk.TIMManager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -158,6 +161,22 @@ public class NotificationsFragment extends Fragment {
         button.setOnClickListener(new View.OnClickListener() {            //退出登录事件
             @Override
             public void onClick(View view) {
+
+                /**
+                 * 登出腾讯IM
+                 **/
+                TIMManager.getInstance().logout(new TIMCallBack() {
+                    @Override
+                    public void onError(int i, String s) {
+                        Log.d("error", "logout failed. code: " + i + " errmsg: " + s);
+                    }
+
+                    @Override
+                    public void onSuccess() {
+                        Log.d("logout success", "退出登录");
+                    }
+                });
+
                 //删除登录信息
                 SharedPrefUtil.removeParam(getActivity(), SharedPrefUtil.LOGIN_DATA);
                 SharedPrefUtil.removeParam(getActivity(), SharedPrefUtil.IS_LOGIN);

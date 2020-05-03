@@ -15,6 +15,7 @@ import com.example.application.face.utils.Md5;
 import com.example.application.http.HttpUtil;
 import com.example.application.http.HttpsUtil;
 import com.example.application.ui.login.LoginActivity;
+import com.tencent.imsdk.TIMManager;
 
 public class RegisterActivity extends AppCompatActivity {
     EditText username;
@@ -40,6 +41,7 @@ public class RegisterActivity extends AppCompatActivity {
                 String editable_password_again = passwordAgain.getText().toString().trim();
 
                 if(editable_password.equals(editable_password_again)){
+
 
                     String url="https://120.26.172.16:8443/AndroidTest/registUser?registname="+editable_name+"&password="+ Md5.MD5(editable_password, "utf-8");
                     HttpsUtil.getInstance().get(url, new HttpsUtil.OnRequestCallBack() {

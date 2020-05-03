@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -20,7 +21,10 @@ import com.example.application.http.HttpUtil;
 import com.example.application.http.HttpsUtil;
 import com.example.application.http.SharedPrefUtil;
 import com.example.application.ui.Register.RegisterActivity;
+import com.example.application.ui.home.utils.GenerateTestUserSig;
 import com.google.gson.Gson;
+import com.tencent.imsdk.TIMCallBack;
+import com.tencent.imsdk.TIMManager;
 
 public class LoginActivity extends AppCompatActivity {
     public EditText Username;
@@ -55,6 +59,22 @@ public class LoginActivity extends AppCompatActivity {
                     //Toast.makeText(LoginActivity.this,username+".."+password,Toast.LENGTH_LONG).show();
                     System.out.println(username+" 测试 "+password);
                     System.out.println(Md5.MD5(password.toString().trim(), "utf-8"));        //加密密码送往服务器
+
+                    /**登录腾讯IM*/
+                    TIMManager.getInstance().login(username.toString().trim(), GenerateTestUserSig.genTestUserSig(username.toString().trim()), new TIMCallBack() {
+                        @Override
+                        public void onError(int i, String s) {
+                            //错误码 code 和错误描述 desc，可用于定位请求失败原因
+                            //错误码 code 列表请参见错误码表
+                            Log.d("failed", "login failed. code: " + i + " errmsg: " + s);
+                        }
+
+                        @Override
+                        public void onSuccess() {
+                            System.out.println(GenerateTestUserSig.genTestUserSig("wangxuan"));
+                            Log.d("login success", "登录成功");
+                        }
+                    });
 
                     String path="https://120.26.172.16:8443/AndroidTest/loginUser?username="+username.toString()+"&password="+Md5.MD5(password.toString().trim(), "utf-8");
                     try {
@@ -108,6 +128,25 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void OpenApp(){       //启动app
+        /**
+         * 已经登录，直接登录IM
+         * */
+        String username = SharedPrefUtil.getUserName(this);
+        TIMManager.getInstance().login(username.toString().trim(), GenerateTestUserSig.genTestUserSig(username.toString().trim()), new TIMCallBack() {
+            @Override
+            public void onError(int i, String s) {
+                //错误码 code 和错误描述 desc，可用于定位请求失败原因
+                //错误码 code 列表请参见错误码表
+                Log.d("failed", "login failed. code: " + i + " errmsg: " + s);
+            }
+
+            @Override
+            public void onSuccess() {
+                System.out.println(GenerateTestUserSig.genTestUserSig("wangxuan"));
+                Log.d("login success", "登录成功");
+            }
+        });
+
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         startActivity(intent);
         finish();

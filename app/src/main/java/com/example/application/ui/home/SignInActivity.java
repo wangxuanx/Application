@@ -7,8 +7,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.application.R;
+import com.example.application.http.HttpsUtil;
+import com.example.application.http.SharedPrefUtil;
+import com.example.application.ui.home.group.GroupActivity;
 import com.github.leondevlifelog.gesturelockview.GestureLockView;
 
 import java.awt.font.TextAttribute;
@@ -24,6 +28,9 @@ public class SignInActivity extends AppCompatActivity {
     private Button button;
 
     private String password;
+    private final int FACE = 100;
+    private final int HANDS = 101;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,15 +39,16 @@ public class SignInActivity extends AppCompatActivity {
 
         init();
 
-        int type = getIntent().getIntExtra("type", 100);
+        int type = getIntent().getIntExtra("type", FACE);
+        String group = getIntent().getStringExtra("group");       //群组名称
 
         switch (type) {
-            case 100:
+            case FACE:
                 setTitle("人脸签到");
                 handsView.setVisibility(View.GONE);
                 gestureLockView.setVisibility(View.GONE);
                 break;
-            case 101:
+            case HANDS:
                 setTitle("手势签到");
                 break;
         }
@@ -96,7 +104,7 @@ public class SignInActivity extends AppCompatActivity {
 
                 System.out.println(Title+" "+hour_num+" "+minute_num+" "+second_num+" "+password);
 
-                ConnectServer(Title, hour_num, minute_num, second_num, password);
+                ConnectServer(type, Title, hour_num, minute_num, second_num, password, group);
 
                 finish();
             }
@@ -113,7 +121,20 @@ public class SignInActivity extends AppCompatActivity {
         button = findViewById(R.id.confirm_Sign_in);
     }
 
-    private void ConnectServer(String title, int hour, int minute, int second, String password){             //向服务器发送数据
+    private void ConnectServer(int type, String title, int hour, int minute, int second, String password, String group){             //向服务器发送数据
+        String createName = SharedPrefUtil.getUserName(this);
+        String url = "https://120.26.172.16:8443/AndroidTest/CreatSign?type="+type+"&title="+title+"&hour="+hour+"&minutes="+minute+"&second="+second+"&password="+password+"&group="+group+"&creatUser="+createName;
+        System.out.println(url);
+        HttpsUtil.getInstance().get(url, new HttpsUtil.OnRequestCallBack() {
+            @Override
+            public void onSuccess(String s) {
+                setResult(0, getIntent());       //成功
+            }
 
+            @Override
+            public void onFail(Exception e) {
+                setResult(1, getIntent());       //失败
+            }
+        });
     }
 }

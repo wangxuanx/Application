@@ -5,13 +5,16 @@ android {
     buildToolsVersion '28.0.3'
     defaultConfig {
         applicationId "com.example.application"
-        minSdkVersion 18
+        minSdkVersion 19
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     android {
+        //use legacy for android 6.0
+        useLibrary 'org.apache.http.legacy'
+
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_8
             targetCompatibility JavaVersion.VERSION_1_8
@@ -74,4 +77,5 @@ dependencies {
     implementation 'com.journeyapps:zxing-android-embedded:3.6.0'             //扫码二维码
     implementation 'com.google.zxing:core:3.4.0'
     implementation 'com.github.LeonDevLifeLog:GestureLockView:0.1.0'
+    api 'com.tencent.imsdk:imsdk:4.8.1'           //腾讯即时通讯IM
 }
