@@ -6,13 +6,23 @@ package com.example.application.ui.home.group;
 
 public class Group {
     private int ImageID;
+    private String GroupID;
     private String GroupName;
     private String GroupDescribe;
 
-    public Group(int ImageID, String GroupName, String GroupDescribe){
+    public Group(int ImageID, String GroupID, String GroupName, String GroupDescribe){
+        this.GroupID = GroupID;
         this.ImageID = ImageID;
         this.GroupName = GroupName;
         this.GroupDescribe = GroupDescribe;
+    }
+
+    public void setGroupID(String groupID) {
+        GroupID = groupID;
+    }
+
+    public String getGroupID() {
+        return GroupID;
     }
 
     public void setImageID(int imageID) {

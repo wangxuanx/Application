@@ -8,6 +8,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+
 import com.example.application.R;
 
 import java.util.List;
@@ -39,9 +41,17 @@ public class GroupAdapter extends ArrayAdapter<Group> {
         ImageView GroupImage = (ImageView) view.findViewById(R.id.group_image);
         TextView GroupName = (TextView) view.findViewById(R.id.group_name);
         TextView GroupDescribe = view.findViewById(R.id.group_describe);
+        view.setTag(group.getGroupID());           //设置view的Tag
         GroupImage.setImageResource(group.getImageID());
         GroupName.setText(group.getGroupName());
         GroupDescribe.setText(group.getGroupDescribe());
         return view;
     }
+
+    @Override
+    public int getPosition(@Nullable Group item) {
+        return super.getPosition(item);
+    }
+
+
 }

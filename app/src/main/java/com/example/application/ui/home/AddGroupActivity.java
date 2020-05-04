@@ -3,6 +3,7 @@ package com.example.application.ui.home;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -11,6 +12,10 @@ import android.widget.Toast;
 import com.example.application.R;
 import com.example.application.http.HttpsUtil;
 import com.example.application.http.SharedPrefUtil;
+import com.tencent.imsdk.TIMCallBack;
+import com.tencent.imsdk.TIMGroupManager;
+import com.tencent.imsdk.TIMGroupSystemElem;
+import com.tencent.imsdk.TIMGroupSystemElemType;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -27,6 +32,7 @@ public class AddGroupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_group);
 
         String title = getIntent().getStringExtra("groupName");
+        String groupID = getIntent().getStringExtra("groupid");
         setTitle("添加群组");
 
         init();
@@ -39,7 +45,7 @@ public class AddGroupActivity extends AppCompatActivity {
             public void onClick(View view) {
                 System.out.println(title);
 
-                AddGroup(title, userName);
+                AddGroup(title, userName, groupID);
             }
         });
     }
@@ -51,8 +57,22 @@ public class AddGroupActivity extends AppCompatActivity {
         button = findViewById(R.id.add_group_button);
     }
 
-    private void AddGroup(String title, String userName){          //向服务器发送信息添加入本群组
-        String url = "https://120.26.172.16:8443/AndroidTest/GroupAddUser?groupName="+title+"&addUser="+userName;
+    private void AddGroup(String title, String userName, String group_Id){          //向服务器发送信息添加入本群组
+
+        TIMGroupManager.getInstance().applyJoinGroup(group_Id, "", new TIMCallBack() {
+            @Override
+            public void onError(int i, String s) {
+                Log.e("tag", "applyJoinGroup err code = " + i + ", desc = " + s);
+            }
+
+            @Override
+            public void onSuccess() {
+                Log.i("tag", "applyJoinGroup success");
+            }
+        });
+
+
+        /*String url = "https://120.26.172.16:8443/AndroidTest/GroupAddUser?groupName="+title+"&addUser="+userName;
         System.out.println(url);
 
         HttpsUtil.getInstance().get(url, new HttpsUtil.OnRequestCallBack() {
@@ -80,6 +100,6 @@ public class AddGroupActivity extends AppCompatActivity {
             public void onFail(Exception e) {
 
             }
-        });
+        });*/
     }
 }

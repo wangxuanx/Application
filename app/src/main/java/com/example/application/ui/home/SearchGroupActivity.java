@@ -87,7 +87,7 @@ public class SearchGroupActivity extends AppCompatActivity {
                     String[] all = list.split(",");        //将字符分割开
                     for(int i = 0; i<all.length; i++){
                         System.out.println("第"+(i+1)+"个："+all[i]);
-                        Group group = new Group(R.drawable.default_head, all[i].trim(), "群组描述");
+                        Group group = new Group(R.drawable.default_head, "dfsf*sd", all[i].trim(), "群组描述");
                         GroupList.add(group);
                     }
                 }

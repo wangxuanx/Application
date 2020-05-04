@@ -1,5 +1,6 @@
 package com.example.application.ui.home.group;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -7,7 +8,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -25,6 +28,14 @@ import com.example.application.R;
 import com.example.application.ui.home.SignInActivity;
 import com.example.application.ui.home.msg.Msg;
 import com.example.application.ui.home.msg.MsgAdapter;
+import com.tencent.imsdk.TIMConversationType;
+import com.tencent.imsdk.TIMElem;
+import com.tencent.imsdk.TIMElemType;
+import com.tencent.imsdk.TIMManager;
+import com.tencent.imsdk.TIMConversation;
+import com.tencent.imsdk.TIMMessage;
+import com.tencent.imsdk.TIMTextElem;
+import com.tencent.imsdk.TIMValueCallBack;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -41,11 +52,15 @@ public class GroupActivity extends AppCompatActivity {
     private RelativeLayout faceRelativeLayout;
     private RelativeLayout handsRelativeLayout;
     private String title;
+    private String groupID;
     private List<Msg> msgList = new ArrayList<>();
     private MsgAdapter msgAdapter;
+    private TIMConversation conversation;
 
     final int FACE = 100;
     final int HANDS = 101;
+    final int SHARE = 110;
+    final int INFO = 111;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,12 +68,19 @@ public class GroupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_group);
 
         title = getIntent().getStringExtra("name");         //接收群组名称
+        groupID = getIntent().getStringExtra("groupid");      //接收群id
+
         setTitle(title);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         init();
 
         initMsg();
+
+        conversation = TIMManager.getInstance().getConversation(          /**获取会话*/
+                TIMConversationType.Group,      //会话类型：群组
+                groupID);                       //群组 ID
+
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         msgAdapter = new MsgAdapter(msgList);
@@ -73,6 +95,35 @@ public class GroupActivity extends AppCompatActivity {
                     msgList.add(msg);
                     msgAdapter.notifyItemInserted(msgList.size() - 1);          //有新消息，刷新显示
                     recyclerView.scrollToPosition(msgList.size() - 1);              //将view定位到最后一行
+
+                    /**发送消息*/
+                    //构造一条消息
+                    TIMMessage msg1 = new TIMMessage();
+                    //添加文本内容
+                    TIMTextElem elem = new TIMTextElem();
+                    elem.setText(string);
+
+                    //将elem添加到消息
+                    if(msg1.addElement(elem) != 0) {
+                        Log.d("tag", "addElement failed");
+                        return;
+                    }
+
+                    //发送消息
+                    conversation.sendMessage(msg1, new TIMValueCallBack<TIMMessage>() {//发送消息回调
+                        @Override
+                        public void onError(int code, String desc) {//发送消息失败
+                            //错误码 code 和错误描述 desc，可用于定位请求失败原因
+                            //错误码 code 含义请参见错误码表
+                            Log.d("tag", "send message failed. code: " + code + " errmsg: " + desc);
+                        }
+
+                        @Override
+                        public void onSuccess(TIMMessage msg) {//发送消息成功
+                            Log.e("tag", "SendMsg ok");
+                        }
+                    });
+
                     editText.setText("");             //清空输入
                 }
             }
@@ -155,12 +206,14 @@ public class GroupActivity extends AppCompatActivity {
             case R.id.share_group:
                 Intent intent = new Intent(GroupActivity.this, ShareGroup.class);
                 intent.putExtra("groupName", title);
-                startActivity(intent);
+                intent.putExtra("groupid", groupID);
+                startActivityForResult(intent, SHARE);
                 break;
             case R.id.group_info:
                 Intent intent1 = new Intent(GroupActivity.this, GroupUserActivity.class);
                 intent1.putExtra("groupName", title);
-                startActivity(intent1);
+                intent1.putExtra("groupid", groupID);
+                startActivityForResult(intent1, INFO);
                 break;
             case 16908332:
                 finish();
@@ -174,6 +227,7 @@ public class GroupActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode){
             case FACE:           //从创建人脸返回
+                setTitle(title);
                 if(resultCode == 0){
                     System.out.println("从人脸返回！！！");
                     Msg msg = new Msg("user", "人脸签到", Msg.SEND_SIGN);
@@ -186,6 +240,7 @@ public class GroupActivity extends AppCompatActivity {
 
                 break;
             case HANDS:           //从创建手势签到返回
+                setTitle(title);
                 if (resultCode == 0){
                     System.out.println("从手势返回！！！");
                     Msg msg1 = new Msg("user", "手势签到", Msg.SEND_SIGN);
@@ -195,9 +250,18 @@ public class GroupActivity extends AppCompatActivity {
                 } else {
                     Toast.makeText(getApplicationContext(), "创建失败！请重试", Toast.LENGTH_SHORT).show();
                 }
-
                 break;
+            case SHARE:
+                setTitle(title);
+            case INFO:
+                setTitle(title);
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.i("tag", "1----------onSaveInstanceState");
     }
 
     public void init(){
@@ -211,6 +275,58 @@ public class GroupActivity extends AppCompatActivity {
     }
 
     private void initMsg(){
+
+        /**获取本地消息*/
+        //获取会话扩展实例
+        TIMConversation con = TIMManager.getInstance().getConversation(TIMConversationType.Group, groupID);
+
+        //获取此会话的消息
+        con.getLocalMessage(20, //获取此会话最近的 10 条消息
+                null, //不指定从哪条消息开始获取 - 等同于从最新的消息开始往前
+                new TIMValueCallBack<List<TIMMessage>>() {//回调接口
+                    @Override
+                    public void onError(int code, String desc) {//获取消息失败
+                        //接口返回了错误码 code 和错误描述 desc，可用于定位请求失败原因
+                        //错误码 code 含义请参见错误码表
+                        Log.d("tag", "get message failed. code: " + code + " errmsg: " + desc);
+                    }
+
+                    @Override
+                    public void onSuccess(List<TIMMessage> msgs) {//获取消息成功
+
+                        for(int j = msgs.size() - 1; j >= 0; j--){
+                            TIMMessage msg = msgs.get(j);
+                            //lastMsg = msg;
+                            System.out.println(msg.toString());
+                            //可以通过 timestamp()获得消息的时间戳, isSelf()是否为自己发送的消息
+                            Log.d("tag", "get msg: " + msg.timestamp() + " self: " + msg.isSelf() + " seq: " + msg.getSeq()+" "+msg.getSender());
+
+                            for(int i = 0; i < msg.getElementCount(); ++i) {
+                                TIMElem elem = msg.getElement(i);
+
+                                //获取当前元素的类型
+                                TIMElemType elemType = elem.getType();
+                                Log.d("tag", "elem type: " + elemType.name());
+                                if (elemType == TIMElemType.Text) {
+                                    TIMTextElem textElem = (TIMTextElem)elem;
+                                    System.out.println(textElem.getText());         //消息内容
+
+                                    if(msg.isSelf() == true){       //判断是发出还是接收
+                                        Msg msg1 = new Msg(msg.getSender(), textElem.getText(), Msg.SEND);
+                                        msgList.add(msg1);
+                                    } else {
+                                        Msg msg1 = new Msg(msg.getSender(), textElem.getText(), Msg.RECEIVE);
+                                        msgList.add(msg1);
+                                    }
+
+                                }
+                            }
+
+                        }
+                    }
+                });
+
+
         Msg msg = new Msg("user1", "第一条信息", Msg.RECEIVE);
         msgList.add(msg);
         Msg msg1 = new Msg("user2", "第二条信息", Msg.SEND);

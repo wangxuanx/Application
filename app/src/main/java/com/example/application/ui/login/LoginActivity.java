@@ -128,24 +128,38 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void OpenApp(){       //启动app
-        /**
-         * 已经登录，直接登录IM
-         * */
-        String username = SharedPrefUtil.getUserName(this);
-        TIMManager.getInstance().login(username.toString().trim(), GenerateTestUserSig.genTestUserSig(username.toString().trim()), new TIMCallBack() {
-            @Override
-            public void onError(int i, String s) {
-                //错误码 code 和错误描述 desc，可用于定位请求失败原因
-                //错误码 code 列表请参见错误码表
-                Log.d("failed", "login failed. code: " + i + " errmsg: " + s);
-            }
 
+        new Thread(new Runnable() {
             @Override
-            public void onSuccess() {
-                System.out.println(GenerateTestUserSig.genTestUserSig("wangxuan"));
-                Log.d("login success", "登录成功");
+            public void run() {
+                /**
+                 * 已经登录，直接登录IM
+                 * */
+                String username = SharedPrefUtil.getUserName(getApplicationContext());
+                System.out.println(username);
+                TIMManager.getInstance().login(username.toString().trim(), GenerateTestUserSig.genTestUserSig(username.toString().trim()), new TIMCallBack() {
+                    @Override
+                    public void onError(int i, String s) {
+                        //错误码 code 和错误描述 desc，可用于定位请求失败原因
+                        //错误码 code 列表请参见错误码表
+                        Log.d("failed", "login failed. code: " + i + " errmsg: " + s);
+                    }
+
+                    @Override
+                    public void onSuccess() {
+                        System.out.println(GenerateTestUserSig.genTestUserSig("wangxuan"));
+                        Log.d("login success", "登录成功");
+                    }
+                });
             }
-        });
+        }).start();
+
+        try {
+            Thread.sleep(50);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
 
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         startActivity(intent);
