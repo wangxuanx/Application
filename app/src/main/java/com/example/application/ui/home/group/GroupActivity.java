@@ -10,7 +10,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -21,10 +24,13 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.application.R;
+import com.example.application.face.utils.LogUtil;
 import com.example.application.ui.home.SignInActivity;
 import com.example.application.ui.home.msg.Msg;
 import com.example.application.ui.home.msg.MsgAdapter;
@@ -56,6 +62,10 @@ public class GroupActivity extends AppCompatActivity {
     private List<Msg> msgList = new ArrayList<>();
     private MsgAdapter msgAdapter;
     private TIMConversation conversation;
+    private LinearLayout linearLayout;
+    private TextView signName;
+    private TextView liftTime;
+    private long leftTime;     //剩余时间
 
     final int FACE = 100;
     final int HANDS = 101;
@@ -76,6 +86,12 @@ public class GroupActivity extends AppCompatActivity {
         init();
 
         initMsg();
+
+        if(update_thread != null){
+            linearLayout.setVisibility(View.VISIBLE);
+            handler.postDelayed(update_thread, 1000);
+        }
+
 
         conversation = TIMManager.getInstance().getConversation(          /**获取会话*/
                 TIMConversationType.Group,      //会话类型：群组
@@ -225,28 +241,44 @@ public class GroupActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        String name = data.getStringExtra("name");
+        int hour = data.getIntExtra("hour", 0);
+        int minute = data.getIntExtra("minute", 0);
+        int second = data.getIntExtra("second", 0);
+        leftTime = hour*3600 + minute*60 + second;
+
+        signName.setText(name);
+        linearLayout.setVisibility(View.VISIBLE);
+
         switch (requestCode){
             case FACE:           //从创建人脸返回
                 setTitle(title);
                 if(resultCode == 0){
                     System.out.println("从人脸返回！！！");
-                    Msg msg = new Msg("user", "人脸签到", Msg.SEND_SIGN);
+                    /*Msg msg = new Msg("user", "人脸签到", Msg.SEND_SIGN);
                     msgList.add(msg);
                     msgAdapter.notifyItemInserted(msgList.size() - 1);          //有新消息，刷新显示
-                    recyclerView.scrollToPosition(msgList.size() - 1);              //将view定位到最后一行
+                    recyclerView.scrollToPosition(msgList.size() - 1);              //将view定位到最后一行*/
+
+                    handler.postDelayed(update_thread, 1000);
+
                 } else {
-                    Toast.makeText(getApplicationContext(), "创建成功！", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "创建失败！请重试", Toast.LENGTH_SHORT).show();
                 }
 
                 break;
             case HANDS:           //从创建手势签到返回
                 setTitle(title);
-                if (resultCode == 0){
+                if (resultCode == 0){       //返回值为0表示创建成功 1表示创建失败
                     System.out.println("从手势返回！！！");
-                    Msg msg1 = new Msg("user", "手势签到", Msg.SEND_SIGN);
+                    /*Msg msg1 = new Msg("user", "手势签到", Msg.SEND_SIGN);
                     msgList.add(msg1);
                     msgAdapter.notifyItemInserted(msgList.size() - 1);          //有新消息，刷新显示
-                    recyclerView.scrollToPosition(msgList.size() - 1);              //将view定位到最后一行
+                    recyclerView.scrollToPosition(msgList.size() - 1);              //将view定位到最后一行*/
+
+                    handler.postDelayed(update_thread, 1000);
+
                 } else {
                     Toast.makeText(getApplicationContext(), "创建失败！请重试", Toast.LENGTH_SHORT).show();
                 }
@@ -258,10 +290,60 @@ public class GroupActivity extends AppCompatActivity {
         }
     }
 
+    Handler handler = new Handler();
+
+    public Handler getHandler() {
+        return handler;
+    }
+
+    Runnable update_thread = new Runnable() {
+        @Override
+        public void run() {
+            leftTime--;
+            //LogUtil.e("leftTime="+leftTime);
+            if (leftTime > 0) {
+                //倒计时效果展示
+                String formatLongToTimeStr = formatLongToTimeStr(leftTime);
+                liftTime.setText(formatLongToTimeStr);
+                System.out.println(formatLongToTimeStr);
+                //每一秒执行一次
+                handler.postDelayed(this, 1000);
+            } else {//倒计时结束
+                //处理业务流程
+                linearLayout.setVisibility(View.GONE);     //结束计时
+                //发送消息，结束倒计时
+            }
+        }
+    };
+
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         Log.i("tag", "1----------onSaveInstanceState");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        /*leftTime = 0;
+        handler.removeCallbacks(update_thread);*/
+    }
+
+    private String formatLongToTimeStr(Long l) {
+        int hour = 0;
+        int minute = 0;
+        int second = 0;
+        second = l.intValue() ;
+        if (second > 60) {
+            minute = second / 60;   //取整
+            second = second % 60;   //取余
+        }
+        if (minute > 60) {
+            hour = minute / 60;
+            minute = minute % 60;
+        }
+        String strtime = hour+":"+minute+":"+second;
+        return strtime;
     }
 
     public void init(){
@@ -272,6 +354,9 @@ public class GroupActivity extends AppCompatActivity {
         button = findViewById(R.id.rv_sent_button);
         faceRelativeLayout = findViewById(R.id.rlFace);
         handsRelativeLayout = findViewById(R.id.rlHands);
+        linearLayout = findViewById(R.id.Sign_layout);
+        signName = findViewById(R.id.Sign_name);
+        liftTime = findViewById(R.id.lift_time);
     }
 
     private void initMsg(){

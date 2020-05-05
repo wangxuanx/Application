@@ -78,4 +78,6 @@ dependencies {
     implementation 'com.google.zxing:core:3.4.0'
     implementation 'com.github.LeonDevLifeLog:GestureLockView:0.1.0'
     api 'com.tencent.imsdk:imsdk:4.8.1'           //腾讯即时通讯IM
+    implementation 'com.github.wangfeng19930909:DragFloatingActionButton:1.0.1'       //悬浮按钮
+    compile 'com.contrarywind:Android-PickerView:4.1.9'          //滚动选择器
 }

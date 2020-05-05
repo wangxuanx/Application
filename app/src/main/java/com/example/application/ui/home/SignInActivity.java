@@ -2,6 +2,7 @@ package com.example.application.ui.home;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -102,10 +103,18 @@ public class SignInActivity extends AppCompatActivity {
                     second_num = Integer.parseInt(second_String);
                 }
 
+                Intent intent = new Intent();
+                intent.putExtra("name", Title);
+                intent.putExtra("hour", hour_num);
+                intent.putExtra("minute", minute_num);
+                intent.putExtra("second", second_num);
+
+
                 System.out.println(Title+" "+hour_num+" "+minute_num+" "+second_num+" "+password);
 
-                ConnectServer(type, Title, hour_num, minute_num, second_num, password, group);
+                //ConnectServer(type, Title, hour_num, minute_num, second_num, password, group);
 
+                setResult(0, intent);
                 finish();
             }
         });
