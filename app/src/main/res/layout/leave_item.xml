@@ -4,31 +4,69 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="#fff"
-    android:layout_marginTop="10dp"
     android:layout_marginBottom="10dp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:background="#EBECF0"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:text="病假"/>
+        <com.example.application.ui.dashboard.AngleView
+            android:layout_width="40dp"
+            android:layout_height="match_parent"/>
 
         <LinearLayout
             android:layout_width="1dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"/>
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/check_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:padding="10dp"
+                android:textColor="#000"
+                android:textSize="15dp"
+                android:textStyle="bold"
+                android:text="我的请假条"/>
+        </LinearLayout>
+
+        <View
+            android:layout_width="40dp"
+            android:layout_height="match_parent"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="#000"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:text="test请假"/>
+            android:layout_gravity="center"
+            android:paddingLeft="10dp"
+            android:text="请假类型:"/>
 
+        <TextView
+            android:id="@+id/check_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:textColor="#000"
+            android:text="病假"/>
     </LinearLayout>
 
     <LinearLayout
@@ -43,6 +81,7 @@
             android:text="起始时间:"/>
 
         <TextView
+            android:id="@+id/beginTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="10dp"
@@ -62,6 +101,7 @@
             android:text="终止时间:"/>
 
         <TextView
+            android:id="@+id/endTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="10dp"
@@ -73,6 +113,7 @@
             android:layout_weight="1"/>
 
         <TextView
+            android:id="@+id/check_state"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="10dp"
