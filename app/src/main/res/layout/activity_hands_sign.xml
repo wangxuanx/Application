@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ui.home.group.HandsSignActivity">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:text="手势签到"
+        android:textSize="25dp"
+        android:gravity="center"/>
+
+    <com.github.leondevlifelog.gesturelockview.GestureLockView
+        android:id="@+id/hands_sign_view"
+        android:layout_width="229dp"
+        android:layout_height="241dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_gravity="center"
+        app:line_color="#80008577"
+        app:dot_radius="15dp"
+        app:dot_pressed_radius="15dp"
+        app:dot_color_pressed="@color/colorPrimary"/>
+
+</LinearLayout>

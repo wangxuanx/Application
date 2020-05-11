@@ -51,18 +51,24 @@ import java.util.List;
 public class GroupActivity extends AppCompatActivity {
 
     private ImageView imageView;
-    private RelativeLayout relativeLayout;
     private RecyclerView recyclerView;
     private EditText editText;
     private Button button;
+
+    private RelativeLayout relativeLayout;
     private RelativeLayout faceRelativeLayout;
     private RelativeLayout handsRelativeLayout;
+    private LinearLayout signLayout;
+
     private String title;
     private String groupID;
+    private int type;
+
     private List<Msg> msgList = new ArrayList<>();
     private MsgAdapter msgAdapter;
+
     private TIMConversation conversation;
-    private LinearLayout linearLayout;
+
     private TextView signName;
     private TextView liftTime;
     private long leftTime;     //剩余时间
@@ -86,12 +92,6 @@ public class GroupActivity extends AppCompatActivity {
         init();
 
         initMsg();
-
-        if(update_thread != null){
-            linearLayout.setVisibility(View.VISIBLE);
-            handler.postDelayed(update_thread, 1000);
-        }
-
 
         conversation = TIMManager.getInstance().getConversation(          /**获取会话*/
                 TIMConversationType.Group,      //会话类型：群组
@@ -207,6 +207,18 @@ public class GroupActivity extends AppCompatActivity {
 
             }
         });
+
+        signLayout.setOnClickListener(new View.OnClickListener() {              //点击签到的入口
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(GroupActivity.this, MainSignActivity.class);
+                intent.putExtra("type", type);
+                if (type == HANDS){           //如果是手势签到，要额外的发送数据
+
+                }
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -249,13 +261,14 @@ public class GroupActivity extends AppCompatActivity {
         leftTime = hour*3600 + minute*60 + second;
 
         signName.setText(name);
-        linearLayout.setVisibility(View.VISIBLE);
+        signLayout.setVisibility(View.VISIBLE);
 
         switch (requestCode){
             case FACE:           //从创建人脸返回
                 setTitle(title);
                 if(resultCode == 0){
                     System.out.println("从人脸返回！！！");
+                    type = FACE;
                     /*Msg msg = new Msg("user", "人脸签到", Msg.SEND_SIGN);
                     msgList.add(msg);
                     msgAdapter.notifyItemInserted(msgList.size() - 1);          //有新消息，刷新显示
@@ -272,6 +285,7 @@ public class GroupActivity extends AppCompatActivity {
                 setTitle(title);
                 if (resultCode == 0){       //返回值为0表示创建成功 1表示创建失败
                     System.out.println("从手势返回！！！");
+                    type = HANDS;
                     /*Msg msg1 = new Msg("user", "手势签到", Msg.SEND_SIGN);
                     msgList.add(msg1);
                     msgAdapter.notifyItemInserted(msgList.size() - 1);          //有新消息，刷新显示
@@ -310,7 +324,7 @@ public class GroupActivity extends AppCompatActivity {
                 handler.postDelayed(this, 1000);
             } else {//倒计时结束
                 //处理业务流程
-                linearLayout.setVisibility(View.GONE);     //结束计时
+                signLayout.setVisibility(View.GONE);     //结束计时
                 //发送消息，结束倒计时
             }
         }
@@ -350,11 +364,14 @@ public class GroupActivity extends AppCompatActivity {
         imageView = findViewById(R.id.ivAdd);
         relativeLayout = findViewById(R.id.bottom_layout);
         recyclerView = findViewById(R.id.rv_chat_list);
+
         editText = findViewById(R.id.et_content);
         button = findViewById(R.id.rv_sent_button);
+
         faceRelativeLayout = findViewById(R.id.rlFace);
         handsRelativeLayout = findViewById(R.id.rlHands);
-        linearLayout = findViewById(R.id.Sign_layout);
+        signLayout = findViewById(R.id.Sign_layout);
+
         signName = findViewById(R.id.Sign_name);
         liftTime = findViewById(R.id.lift_time);
     }

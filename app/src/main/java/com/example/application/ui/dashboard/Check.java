@@ -7,14 +7,23 @@ public class Check {
     private String beginTime;         //起始时间
     private String endTime;          //终止时间
     private String state;         //假条状态
+    private String user;
 
-    public Check(int ID, String TITLE, String TYPE, String BEGINTIME, String ENDTIME, String STATE){
+    public Check(int ID, String TITLE, String TYPE, String USER, String BEGINTIME, String ENDTIME, String STATE){
         this.id = ID;
         this.title = TITLE;
         this.type = TYPE;
+        this.user = USER;
         this.beginTime = BEGINTIME;
         this.endTime = ENDTIME;
         this.state = STATE;
+    }
+
+    /***
+     * 无参数构造函数
+     */
+    public  Check(){
+
     }
 
     public void setId(int id) {
@@ -39,6 +48,14 @@ public class Check {
 
     public String getType() {
         return type;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public String getUser() {
+        return user;
     }
 
     public void setBeginTime(String beginTime) {

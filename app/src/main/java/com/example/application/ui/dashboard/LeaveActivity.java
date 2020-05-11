@@ -2,6 +2,7 @@ package com.example.application.ui.dashboard;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,8 +22,10 @@ import com.bigkoo.pickerview.view.OptionsPickerView;
 import com.bigkoo.pickerview.view.TimePickerView;
 import com.example.application.MainActivity;
 import com.example.application.R;
+import com.example.application.http.HttpsUtil;
 import com.tencent.imsdk.TIMGroupManager;
 import com.tencent.imsdk.TIMGroupMemberInfo;
+import com.tencent.imsdk.TIMManager;
 import com.tencent.imsdk.TIMValueCallBack;
 import com.tencent.imsdk.ext.group.TIMGroupBaseInfo;
 
@@ -32,6 +35,8 @@ import java.util.Date;
 import java.util.List;
 
 public class LeaveActivity extends AppCompatActivity {
+    private final int FINISH = 111;
+
     private LinearLayout typeLayout;
     private LinearLayout beginLayout;
     private LinearLayout endLayout;
@@ -41,9 +46,7 @@ public class LeaveActivity extends AppCompatActivity {
     private TextView beginText;
     private TextView endText;
     private TextView checkText;
-
     private EditText editText;
-
     private Button button;
 
     private ArrayList<String> optionsItems = new ArrayList<>();           //请假类型List
@@ -57,6 +60,7 @@ public class LeaveActivity extends AppCompatActivity {
     private String endTime;         //终止时间
     private String otherInfo;         //请假备注
     private String checkUser;         //审核人
+    private String belongUser;         //请假人
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,7 +131,7 @@ public class LeaveActivity extends AppCompatActivity {
                         endTime = longToDate(date.getTime());
                     }
                 }).setTitleText("起始时间")
-                        .setType(new boolean[]{true, true, true, true, false, false})// 默认全部显示
+                        .setType(new boolean[]{true, true, true, true, false, false})      // 默认全部显示
                         .setSubmitColor(Color.rgb(00,85,77))
                         .setCancelColor(Color.rgb(00,85,77))
                         .build();
@@ -165,10 +169,42 @@ public class LeaveActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 otherInfo = editText.getText().toString().trim();
+                belongUser = TIMManager.getInstance().getLoginUser();
 
-                System.out.println(type+" "+beginTime+" "+endTime+" "+otherInfo+" "+checkUser);
+                /**创建请假*/
+                String url = "https://120.26.172.16:8443/AndroidTest/CreatLeave?type="+type+"&beginTime="+beginTime+"&endTime="+endTime+"&otherInfo="+otherInfo+"&state=待审核"+"&belongUser="+belongUser+"&checkUser="+checkUser;
+                HttpsUtil.getInstance().get(url, new HttpsUtil.OnRequestCallBack() {
+                    @Override
+                    public void onSuccess(String s) {
+                        if(s.equals("1")){
 
-                finish();
+                            Intent intent = new Intent();
+                            //把需要返回的数据存放在intent
+                            intent.putExtra("type", type);
+                            intent.putExtra("beginTime", beginTime);
+                            intent.putExtra("endTime", endTime);
+                            intent.putExtra("otherInfo", otherInfo);
+                            intent.putExtra("belongUser", belongUser);
+                            intent.putExtra("checkUser", checkUser);
+                            //设置返回数据
+                            setResult(FINISH, intent);
+
+                            finish();
+                        } else {
+                            Toast.makeText(LeaveActivity.this, "创建失败！请重试！", Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+
+                    @Override
+                    public void onFail(Exception e) {
+                        Toast.makeText(LeaveActivity.this, "创建失败！请重试！", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                System.out.println(type+" "+beginTime+" "+endTime+" "+otherInfo+" "+belongUser+" "+checkUser);
+
+
             }
         });
     }
@@ -181,6 +217,7 @@ public class LeaveActivity extends AppCompatActivity {
     }
 
     private void init(){
+
         typeLayout = findViewById(R.id.leave_type_layout);
         beginLayout = findViewById(R.id.leave_begin_time_layout);
         endLayout = findViewById(R.id.leave_end_time_layout);
@@ -190,13 +227,13 @@ public class LeaveActivity extends AppCompatActivity {
         beginText = findViewById(R.id.leave_begin_time);
         endText = findViewById(R.id.leave_end_time);
         checkText = findViewById(R.id.leave_check_user);
-
         editText = findViewById(R.id.leave_more_info);
 
         button = findViewById(R.id.leave_confirm);
     }
 
     private void initData(){
+
         optionsItems.add("事假");
         optionsItems.add("病假");
         optionsItems.add("其他假项");

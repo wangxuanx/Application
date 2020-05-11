@@ -273,7 +273,7 @@ public class HomeFragment extends Fragment {
                             AddGroupID = timGroupSystemElem.getGroupId();         //获取群组ID
                             AddGroupUser = timGroupSystemElem.getOpUser();         //获取申请加群人
                             String url = "https://120.26.172.16:8443/AndroidTest/AddUserToGroup?username="+AddGroupUser+"&groupid="+AddGroupID;
-                            HttpsUtil.getInstance().get(url, new HttpsUtil.OnRequestCallBack() {
+                            /*HttpsUtil.getInstance().get(url, new HttpsUtil.OnRequestCallBack() {
                                 @Override
                                 public void onSuccess(String s) {
                                     Log.d("log", "加入群组失败");
@@ -283,7 +283,7 @@ public class HomeFragment extends Fragment {
                                 public void onFail(Exception e) {
                                     Log.d("log", "加入群组成功");
                                 }
-                            });
+                            });*/
                         }
 
                         Log.i("info", "获取加群信息");

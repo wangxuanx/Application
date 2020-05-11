@@ -43,12 +43,14 @@ public class CheckAdapter extends ArrayAdapter<Check> {
         View view = LayoutInflater.from(getContext()).inflate(resourceId, null);
         TextView Title = view.findViewById(R.id.check_title);
         TextView Type = view.findViewById(R.id.check_type);
+        TextView User = view.findViewById(R.id.check_user);
         TextView BeginTime = view.findViewById(R.id.beginTime);
         TextView EndTime = view.findViewById(R.id.endTime);
         TextView State = view.findViewById(R.id.check_state);
         view.setTag(check.getId());           //设置view的Tag
         Title.setText(check.getTitle());
         Type.setText(check.getType());
+        User.setText(check.getUser());
         BeginTime.setText(check.getBeginTime());
         EndTime.setText(check.getEndTime());
         State.setText(check.getState());
