@@ -6,9 +6,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -30,7 +33,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.application.R;
+import com.example.application.face.utils.DatabaseHelper;
 import com.example.application.face.utils.LogUtil;
+import com.example.application.ui.dashboard.Check;
 import com.example.application.ui.home.SignInActivity;
 import com.example.application.ui.home.msg.Msg;
 import com.example.application.ui.home.msg.MsgAdapter;
@@ -45,7 +50,10 @@ import com.tencent.imsdk.TIMValueCallBack;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class GroupActivity extends AppCompatActivity {
@@ -62,6 +70,7 @@ public class GroupActivity extends AppCompatActivity {
 
     private String title;
     private String groupID;
+    private String sql = "CREATE TABLE IF NOT EXISTS sign_list (id integer primary key, title varchar(255) not null, type varchar(5) not null, deadline_time varchar(255) not null, password varchar(10) not null, groupName varchar(255) not null, createUser varchar(255) not null)";
     private int type;
 
     private List<Msg> msgList = new ArrayList<>();
@@ -73,10 +82,13 @@ public class GroupActivity extends AppCompatActivity {
     private TextView liftTime;
     private long leftTime;     //剩余时间
 
-    final int FACE = 100;
-    final int HANDS = 101;
-    final int SHARE = 110;
-    final int INFO = 111;
+    private final int FACE = 100;
+    private final int HANDS = 101;
+    private final int SHARE = 110;
+    private final int INFO = 111;
+
+    private String SQL;          //数据库sql语句
+    private String sql_sign;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,12 +98,22 @@ public class GroupActivity extends AppCompatActivity {
         title = getIntent().getStringExtra("name");         //接收群组名称
         groupID = getIntent().getStringExtra("groupid");      //接收群id
 
+        SQL = "CREATE TABLE IF NOT EXISTS "+title
+                +"_group_chat_list ("
+                +"id integer primary key, "
+                +"seq varchar(50) not null, "
+                +"text varchar(255) not null, "
+                +"user varchar(255) not null, "
+                +"type int(2) not null)";
+
         setTitle(title);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         init();
 
         initMsg();
+
+        initCheck();
 
         conversation = TIMManager.getInstance().getConversation(          /**获取会话*/
                 TIMConversationType.Group,      //会话类型：群组
@@ -101,6 +123,8 @@ public class GroupActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         msgAdapter = new MsgAdapter(msgList);
         recyclerView.setAdapter(msgAdapter);
+        recyclerView.scrollToPosition(msgList.size() - 1);              //将view定位到最后一行
+
 
         button.setOnClickListener(new View.OnClickListener() {           //点击发送消息
             @Override
@@ -137,6 +161,8 @@ public class GroupActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(TIMMessage msg) {//发送消息成功
                             Log.e("tag", "SendMsg ok");
+
+                            initMsg();
                         }
                     });
 
@@ -254,25 +280,23 @@ public class GroupActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        String name = data.getStringExtra("name");
-        int hour = data.getIntExtra("hour", 0);
-        int minute = data.getIntExtra("minute", 0);
-        int second = data.getIntExtra("second", 0);
-        leftTime = hour*3600 + minute*60 + second;
+        if (requestCode == FACE || requestCode == HANDS){
+            String name = data.getStringExtra("name");
+            int hour = data.getIntExtra("hour", 0);
+            int minute = data.getIntExtra("minute", 0);
+            int second = data.getIntExtra("second", 0);
+            leftTime = hour*3600 + minute*60 + second;
 
-        signName.setText(name);
-        signLayout.setVisibility(View.VISIBLE);
+            signName.setText(name);
+        }
 
         switch (requestCode){
             case FACE:           //从创建人脸返回
+
                 setTitle(title);
                 if(resultCode == 0){
                     System.out.println("从人脸返回！！！");
                     type = FACE;
-                    /*Msg msg = new Msg("user", "人脸签到", Msg.SEND_SIGN);
-                    msgList.add(msg);
-                    msgAdapter.notifyItemInserted(msgList.size() - 1);          //有新消息，刷新显示
-                    recyclerView.scrollToPosition(msgList.size() - 1);              //将view定位到最后一行*/
 
                     handler.postDelayed(update_thread, 1000);
 
@@ -286,10 +310,6 @@ public class GroupActivity extends AppCompatActivity {
                 if (resultCode == 0){       //返回值为0表示创建成功 1表示创建失败
                     System.out.println("从手势返回！！！");
                     type = HANDS;
-                    /*Msg msg1 = new Msg("user", "手势签到", Msg.SEND_SIGN);
-                    msgList.add(msg1);
-                    msgAdapter.notifyItemInserted(msgList.size() - 1);          //有新消息，刷新显示
-                    recyclerView.scrollToPosition(msgList.size() - 1);              //将view定位到最后一行*/
 
                     handler.postDelayed(update_thread, 1000);
 
@@ -304,18 +324,16 @@ public class GroupActivity extends AppCompatActivity {
         }
     }
 
+
     Handler handler = new Handler();
-
-    public Handler getHandler() {
-        return handler;
-    }
-
     Runnable update_thread = new Runnable() {
         @Override
         public void run() {
             leftTime--;
             //LogUtil.e("leftTime="+leftTime);
             if (leftTime > 0) {
+
+                signLayout.setVisibility(View.VISIBLE);
                 //倒计时效果展示
                 String formatLongToTimeStr = formatLongToTimeStr(leftTime);
                 liftTime.setText(formatLongToTimeStr);
@@ -329,6 +347,7 @@ public class GroupActivity extends AppCompatActivity {
             }
         }
     };
+
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
@@ -378,6 +397,10 @@ public class GroupActivity extends AppCompatActivity {
 
     private void initMsg(){
 
+        DatabaseHelper databaseHelper = new DatabaseHelper(this, "app_data_chat", null, 2, SQL);       //向数据库插入数据
+        databaseHelper.CreateTable();        //创建新表
+        SQLiteDatabase db = databaseHelper.getWritableDatabase();
+
         /**获取本地消息*/
         //获取会话扩展实例
         TIMConversation con = TIMManager.getInstance().getConversation(TIMConversationType.Group, groupID);
@@ -399,7 +422,7 @@ public class GroupActivity extends AppCompatActivity {
                         for(int j = msgs.size() - 1; j >= 0; j--){
                             TIMMessage msg = msgs.get(j);
                             //lastMsg = msg;
-                            System.out.println(msg.toString());
+                            //System.out.println(msg.toString());
                             //可以通过 timestamp()获得消息的时间戳, isSelf()是否为自己发送的消息
                             Log.d("tag", "get msg: " + msg.timestamp() + " self: " + msg.isSelf() + " seq: " + msg.getSeq()+" "+msg.getSender());
 
@@ -413,13 +436,30 @@ public class GroupActivity extends AppCompatActivity {
                                     TIMTextElem textElem = (TIMTextElem)elem;
                                     System.out.println(textElem.getText());         //消息内容
 
-                                    if(msg.isSelf() == true){       //判断是发出还是接收
-                                        Msg msg1 = new Msg(msg.getSender(), textElem.getText(), Msg.SEND);
-                                        msgList.add(msg1);
-                                    } else {
-                                        Msg msg1 = new Msg(msg.getSender(), textElem.getText(), Msg.RECEIVE);
-                                        msgList.add(msg1);
+                                    Cursor cursor = db.query(title +"_group_chat_list", null, "seq = ?", new String[]{String.valueOf(msg.getSeq())}, null, null, "id");
+                                    if (cursor.getCount() == 0) {
+                                        if(msg.isSelf() == true){       //判断是发出还是接收
+                                            ContentValues values = new ContentValues();
+                                            values.put("text", textElem.getText());        //内容
+                                            values.put("seq", String.valueOf(msg.getSeq()));             //消息序列号
+                                            values.put("user", msg.getSender());           //用户
+                                            values.put("type", Msg.SEND);             //发送的消息
+
+                                            db.insert(title +"_group_chat_list", null, values);
+
+                                        } else {
+                                            ContentValues values = new ContentValues();
+                                            values.put("text", textElem.getText());        //内容
+                                            values.put("seq", String.valueOf(msg.getSeq()));             //消息序列号
+                                            values.put("user", msg.getSender());           //用户
+                                            values.put("type", Msg.RECEIVE);             //发送的消息
+
+                                            db.insert(title +"_group_chat_list", null, values);
+
+                                        }
                                     }
+
+
 
                                 }
                             }
@@ -429,9 +469,53 @@ public class GroupActivity extends AppCompatActivity {
                 });
 
 
-        Msg msg = new Msg("user1", "第一条信息", Msg.RECEIVE);
-        msgList.add(msg);
-        Msg msg1 = new Msg("user2", "第二条信息", Msg.SEND);
-        msgList.add(msg1);
+        /**从数据库查找数据*/
+        System.out.println("创建"+SQL);
+        Cursor cursor = db.query(title +"_group_chat_list", null, null, null, null, null, "id");
+        cursor.moveToFirst();
+        while(!cursor.isAfterLast() && (cursor.getString(1) != null)){
+
+            Msg msg = new Msg();
+            msg.setContent(cursor.getString(2));
+            msg.setUser(cursor.getString(3));
+            msg.setType(cursor.getInt(4));
+
+            msgList.add(msg);
+            cursor.moveToNext();
+        }
     }
+
+    private void initCheck(){           //获取本群组的签到信息
+        /**
+         * 从本地数据库获取是否有本群的签到
+         * */
+        Calendar calendar = Calendar.getInstance();        //获取当前时间
+        calendar.get(Calendar.YEAR);
+        calendar.get(Calendar.MONTH);
+        calendar.get(Calendar.DATE);
+        calendar.get(Calendar.HOUR_OF_DAY);       //24小时制
+        calendar.get(Calendar.MINUTE);
+        calendar.get(Calendar.SECOND);
+        Date curTime = calendar.getTime();        //当前时间
+        SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+        System.out.println("当前时间："+dateFormat.format(curTime));
+
+        DatabaseHelper databaseHelper = new DatabaseHelper(this, "app_data", null, 1, sql);
+        SQLiteDatabase db = databaseHelper.getWritableDatabase();
+        Cursor cursor = db.query("sign_list", null, "groupName = ?", new String[]{title}, null, null, "id");       //搜索可用的签到
+        cursor.moveToFirst();
+        while(!cursor.isAfterLast() && (cursor.getString(1) != null)){
+            String title = cursor.getString(1);            //获取title
+            String type = cursor.getString(2);
+            String deadline_time = cursor.getString(3);
+            String password = cursor.getString(4);
+            String groupName = cursor.getString(5);
+            String creatUser = cursor.getString(6);
+
+            System.out.println(title+" "+type+" "+deadline_time+" "+password+" "+groupName+" "+creatUser);
+
+            cursor.moveToNext();
+        }
+    }
+
 }

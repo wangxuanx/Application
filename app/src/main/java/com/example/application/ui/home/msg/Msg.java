@@ -15,6 +15,10 @@ public class Msg {
         this.type = type;
     }
 
+    public Msg(){
+
+    }
+
     public String getUser() {
         return user;
     }

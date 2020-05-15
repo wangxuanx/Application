@@ -21,41 +21,31 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.ViewHolder> {
     static class ViewHolder extends RecyclerView.ViewHolder{
         RelativeLayout leftLayout;
         RelativeLayout rightLayout;
-        RelativeLayout leftLayoutSign;         //左边签到
-        RelativeLayout rightLayoutSign;         //右边签到
 
         CircleImageView leftImage;
         CircleImageView rightImage;
-        CircleImageView leftImageSign;
-        CircleImageView rightImageSign;
 
         ImageView leftSignView;
         ImageView rightSignView;
 
         TextView leftText;
         TextView rightText;
-        TextView leftSignText;
-        TextView rightSignText;
+        TextView leftUserText;
+        TextView rightUserText;
 
         public ViewHolder(View view){
             super(view);
             leftLayout = view.findViewById(R.id.left_message_layout);
             rightLayout = view.findViewById(R.id.right_message_layout);
-            leftLayoutSign = view.findViewById(R.id.left_sign_layout);
-            rightLayoutSign = view.findViewById(R.id.right_sign_layout);
 
             leftImage = view.findViewById(R.id.left_message_head);
             rightImage = view.findViewById(R.id.right_message_head);
-            leftImageSign = view.findViewById(R.id.left_sign_head);
-            rightImageSign = view.findViewById(R.id.right_sign_head);
 
-            leftSignView = view.findViewById(R.id.left_sign_image);
-            rightSignView = view.findViewById(R.id.right_sign_image);
 
             leftText = view.findViewById(R.id.left_message_content);
             rightText = view.findViewById(R.id.right_message_content);
-            leftSignText = view.findViewById(R.id.left_sign_text);
-            rightSignText = view.findViewById(R.id.right_sign_text);
+            leftUserText = view.findViewById(R.id.left_message_user);
+            rightUserText = view.findViewById(R.id.right_message_user);
         }
     }
 
@@ -85,39 +75,15 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.ViewHolder> {
         if(msg.getType() == Msg.RECEIVE){              //收到消息显示
             holder.rightLayout.setVisibility(View.GONE);
             holder.leftLayout.setVisibility(View.VISIBLE);
+            holder.rightUserText.setVisibility(View.GONE);
             holder.leftText.setText(msg.getContent());
-            /**签到item消失*/
-            holder.leftLayoutSign.setVisibility(View.GONE);
-            holder.rightLayoutSign.setVisibility(View.GONE);
+            holder.leftUserText.setText(msg.getUser());
         } else if (msg.getType() == Msg.SEND){           //发送信息显示
             holder.rightLayout.setVisibility(View.VISIBLE);
             holder.leftLayout.setVisibility(View.GONE);
+            holder.leftUserText.setVisibility(View.GONE);
             holder.rightText.setText(msg.getContent());
-            /**签到item消失*/
-            holder.leftLayoutSign.setVisibility(View.GONE);
-            holder.rightLayoutSign.setVisibility(View.GONE);
-        } else if (msg.getType() == Msg.RECEIVE_SIGN){      //收到签到显示
-            holder.rightLayout.setVisibility(View.GONE);
-            holder.leftLayout.setVisibility(View.GONE);
-            holder.rightLayoutSign.setVisibility(View.GONE);
-
-            if(msg.getContent().equals("人脸签到")){
-                holder.leftSignView.setImageResource(R.drawable.face);
-            } else {
-                holder.leftSignView.setImageResource(R.drawable.hands);
-            }
-            holder.leftSignText.setText(msg.getContent());
-        } else if (msg.getType() == Msg.SEND_SIGN){        //发送签到
-            holder.rightLayout.setVisibility(View.GONE);
-            holder.leftLayout.setVisibility(View.GONE);
-            holder.leftLayoutSign.setVisibility(View.GONE);
-
-            if(msg.getContent().equals("人脸签到")){
-                holder.rightSignView.setImageResource(R.drawable.face);
-            } else {
-                holder.rightSignView.setImageResource(R.drawable.hands);
-            }
-            holder.rightSignText.setText(msg.getContent());
+            holder.rightUserText.setText(msg.getUser());
         }
     }
 

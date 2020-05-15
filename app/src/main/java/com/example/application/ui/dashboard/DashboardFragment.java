@@ -29,7 +29,7 @@ import java.util.List;
 
 public class DashboardFragment extends Fragment {
     private final int FINISH = 111;
-    private final String sql = "CREATE TABLE IF NOT EXISTS leave_list (ID int(20) not null, TITLE varchar(255) not null, TYPE varchar(255) not null, USER varchar(255) not null, BEGINTIME datetime not null, ENDTIME datetime not null, STATE varchar(20) not null, primary key(ID))";
+    private final String sql = "CREATE TABLE IF NOT EXISTS leave_list (ID integer primary key, TITLE varchar(255) not null, TYPE varchar(255) not null, USER varchar(255) not null, BEGINTIME datetime not null, ENDTIME datetime not null, STATE varchar(20) not null)";
 
 
     private DashboardViewModel dashboardViewModel;
@@ -71,23 +71,9 @@ public class DashboardFragment extends Fragment {
     }
 
     private void initData(){
-        /*DatabaseHelper helper = new DatabaseHelper(getContext(), null, null, 1, "create table user(name varchar(20))");
-        String sql = "CREATE TABLE IF NOT EXISTS leave_list (ID int(20) not null, TITLE varchar(255) not null, TYPE varchar(255) not null, USER varchar(255) not null, BEGINTIME datetime not null, ENDTIME datetime not null, STATE varchar(20) not null, primary key(ID))";
-        DatabaseHelper databaseHelper = new DatabaseHelper(getContext(), "leave_list", null, 1, sql);
-        SQLiteDatabase db = databaseHelper.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put("ID", 1);
-        values.put("TITLE", "我的请假条");
-        values.put("TYPE", "病假");
-        values.put("USER", "test");
-        values.put("BEGINTIME", "2020-4-1 12");
-        values.put("ENDTIME", "2020-4-3 12");
-        values.put("STATE", "待审核");
-        db.insert("leave_list",null, values);*/
 
         /**从数据库查找数据*/
-        DatabaseHelper databaseHelper = new DatabaseHelper(getContext(), "leave_list", null, 1, sql);
+        DatabaseHelper databaseHelper = new DatabaseHelper(getContext(), "app_data1", null, 1, sql);
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
         Cursor cursor = db.query("leave_list", null, null, null, null, null, "ID");
         cursor.moveToFirst();
@@ -129,7 +115,7 @@ public class DashboardFragment extends Fragment {
                     checkAdapter.notifyDataSetChanged();
 
                     /**本地数据库插入数据*/
-                    DatabaseHelper databaseHelper = new DatabaseHelper(getContext(), "leave_list", null, 1, sql);
+                    DatabaseHelper databaseHelper = new DatabaseHelper(getContext(), "app_data1", null, 1, sql);
                     SQLiteDatabase db = databaseHelper.getWritableDatabase();
                     ContentValues values = new ContentValues();
                     values.put("ID", checkList.size()+1);

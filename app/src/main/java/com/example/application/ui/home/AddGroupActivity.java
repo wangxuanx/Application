@@ -46,6 +46,8 @@ public class AddGroupActivity extends AppCompatActivity {
                 System.out.println(title);
 
                 AddGroup(title, userName, groupID);
+
+                finish();
             }
         });
     }
@@ -59,7 +61,7 @@ public class AddGroupActivity extends AppCompatActivity {
 
     private void AddGroup(String title, String userName, String group_Id){          //向服务器发送信息添加入本群组
 
-        TIMGroupManager.getInstance().applyJoinGroup(group_Id, "", new TIMCallBack() {
+        TIMGroupManager.getInstance().applyJoinGroup(group_Id, "some reason", new TIMCallBack() {
             @Override
             public void onError(int i, String s) {
                 Log.e("tag", "applyJoinGroup err code = " + i + ", desc = " + s);

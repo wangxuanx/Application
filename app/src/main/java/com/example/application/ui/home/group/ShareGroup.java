@@ -24,7 +24,7 @@ public class ShareGroup extends AppCompatActivity {
         String title = getIntent().getStringExtra("groupName");
         String groupID = getIntent().getStringExtra("groupid");
 
-        Bitmap mBitmap = QRCodeUtil.createQRCodeBitmap(title+"$"+groupID, 580, 580);
+        Bitmap mBitmap = QRCodeUtil.createQRCodeBitmap(title+","+groupID, 580, 580);
 
         imageView.setImageBitmap(mBitmap);
     }

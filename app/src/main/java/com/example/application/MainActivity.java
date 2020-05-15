@@ -10,6 +10,7 @@ import android.view.WindowManager;
 
 import com.example.application.ui.home.group.Group;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.idescout.sql.SqlScoutServer;
 import com.tencent.imsdk.TIMValueCallBack;
 import com.tencent.imsdk.ext.group.TIMGroupBaseInfo;
 
@@ -35,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         closeAndroidPDialog();              //若是Android P，去除提示
+
+        SqlScoutServer.create(this, getPackageName());
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // menu should be considered as top level destinations.

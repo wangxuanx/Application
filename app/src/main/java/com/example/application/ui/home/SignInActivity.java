@@ -3,34 +3,49 @@ package com.example.application.ui.home;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bigkoo.pickerview.builder.TimePickerBuilder;
+import com.bigkoo.pickerview.listener.OnTimeSelectListener;
+import com.bigkoo.pickerview.view.TimePickerView;
 import com.example.application.R;
 import com.example.application.http.HttpsUtil;
 import com.example.application.http.SharedPrefUtil;
+import com.example.application.ui.dashboard.LeaveActivity;
 import com.example.application.ui.home.group.GroupActivity;
 import com.github.leondevlifelog.gesturelockview.GestureLockView;
 
 import java.awt.font.TextAttribute;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 public class SignInActivity extends AppCompatActivity {
     /**主要实现人脸签到与手势签到功能*/
     private GestureLockView gestureLockView;
+    private LinearLayout linearLayout;
     private HandsView handsView;
     private EditText editText;
-    private EditText hour;
-    private EditText minute;
-    private EditText second;
+    private TextView timeView;
     private Button button;
 
     private String password;
+    private long time;
+    private int hour;
+    private int minute;
+    private int second;
     private final int FACE = 100;
     private final int HANDS = 101;
+
+    private Intent intent;
 
 
     @Override
@@ -75,47 +90,50 @@ public class SignInActivity extends AppCompatActivity {
             }
         });
 
+        linearLayout.setOnClickListener(new View.OnClickListener() {            //时间选择器
+            @Override
+            public void onClick(View view) {
+                Calendar startDate = Calendar.getInstance();
+                startDate.set(00, 00, 00, 00,00 ,00);
+                //时间选择器
+                TimePickerView pvTime = new TimePickerBuilder(SignInActivity.this, new OnTimeSelectListener() {
+                    @Override
+                    public void onTimeSelect(Date date, View v) {
+                        //Toast.makeText(MainActivity.this, getTime(date), Toast.LENGTH_SHORT).show();
+                        timeView.setText(longToDate(date.getTime()));
+                        time = date.getTime();
+
+                        hour = date.getHours();
+                        minute = date.getMinutes();
+                        second = date.getSeconds();
+
+                        System.out.println(date);
+                    }
+                }).setTitleText("签到时长")
+                        .setDate(startDate)
+                        .setType(new boolean[]{false, false, false, true, true, true})      // 默认全部显示
+                        .setSubmitColor(Color.rgb(00,85,77))
+                        .setCancelColor(Color.rgb(00,85,77))
+                        .build();
+
+                pvTime.show();
+            }
+        });
+
         button.setOnClickListener(new View.OnClickListener() {          //点击发布
             @Override
             public void onClick(View view) {
                 String Title = editText.getText().toString().trim();        //获取签到的名称
-                String hour_String = hour.getText().toString().trim();
-                String minute_String = minute.getText().toString().trim();
-                String second_String = second.getText().toString().trim();
-                int hour_num;
-                int minute_num;
-                int second_num;
-                if(hour_String.equals("")){
-                    hour_num = 0;
-                } else {
-                    hour_num = Integer.parseInt(hour_String);
-                }
 
-                if(minute_String.equals("")){
-                    minute_num = 0;
-                } else {
-                    minute_num = Integer.parseInt(minute_String);
-                }
-
-                if(second_String.equals("")){
-                    second_num = 0;
-                } else {
-                    second_num = Integer.parseInt(second_String);
-                }
-
-                Intent intent = new Intent();
+                intent = new Intent();
                 intent.putExtra("name", Title);
-                intent.putExtra("hour", hour_num);
-                intent.putExtra("minute", minute_num);
-                intent.putExtra("second", second_num);
+                intent.putExtra("time", time);
+                intent.putExtra("hour", hour);
+                intent.putExtra("minute", minute);
+                intent.putExtra("second", second);
 
+                ConnectServer(type, Title, hour, minute, second, password, group);
 
-                System.out.println(Title+" "+hour_num+" "+minute_num+" "+second_num+" "+password);
-
-                //ConnectServer(type, Title, hour_num, minute_num, second_num, password, group);
-
-                setResult(0, intent);
-                finish();
             }
         });
     }
@@ -124,9 +142,8 @@ public class SignInActivity extends AppCompatActivity {
         gestureLockView = findViewById(R.id.customGestureLockView);
         handsView = findViewById(R.id.hands_view);
         editText = findViewById(R.id.Sign_in_name);
-        hour = findViewById(R.id.hour);
-        minute = findViewById(R.id.minute);
-        second = findViewById(R.id.second);
+        linearLayout = findViewById(R.id.sign_time_layout);
+        timeView = findViewById(R.id.sign_time);
         button = findViewById(R.id.confirm_Sign_in);
     }
 
@@ -137,13 +154,24 @@ public class SignInActivity extends AppCompatActivity {
         HttpsUtil.getInstance().get(url, new HttpsUtil.OnRequestCallBack() {
             @Override
             public void onSuccess(String s) {
-                setResult(0, getIntent());       //成功
+                Log.i("log", "success");
+                setResult(0, intent);       //成功
+                finish();
             }
 
             @Override
             public void onFail(Exception e) {
+                Log.i("log", "failed");
                 setResult(1, getIntent());       //失败
             }
         });
+    }
+
+    private static String longToDate(long lo){           //long转化为时形式
+
+        Date date = new Date(lo);
+        SimpleDateFormat sd = new SimpleDateFormat("HH:mm:ss");         //"yyyy-MM-dd HH:mm:ss"
+
+        return sd.format(date);
     }
 }

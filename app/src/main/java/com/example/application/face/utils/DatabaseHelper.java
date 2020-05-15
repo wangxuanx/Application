@@ -9,25 +9,33 @@ import android.util.Log;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private String url;        //创建的sql语句
-    public SQLiteDatabase db;
+    private SQLiteDatabase database;
     private static DatabaseHelper instance;
 
     //带全部参数的构造函数，此构造函数必不可少
     public DatabaseHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version, String url) {
         super(context, name, factory, version);
         this.url = url;
+        database = this.getWritableDatabase();
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         //创建数据库sql语句 并 执行
-        this.db = db;
         db.execSQL(url);
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) { }
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        System.out.println("执行了："+url);
+        db.execSQL(url);
+        onCreate(db);
+    }
 
+
+    public void CreateTable(){
+        database.execSQL(url);
+    }
     /**
      * 判断某张表是否存在
      * @paramtabName表名

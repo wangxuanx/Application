@@ -61,7 +61,8 @@ public class MainSignActivity extends AppCompatActivity {
                     Intent intent = new Intent(MainSignActivity.this, FaceDetectActivity.class);
                     startActivityForResult(intent, FACE);
                 } else {
-
+                    Intent intent = new Intent(MainSignActivity.this, HandsSignActivity.class);
+                    startActivityForResult(intent, HANDS);
                 }
             }
         });
@@ -75,6 +76,7 @@ public class MainSignActivity extends AppCompatActivity {
         button = findViewById(R.id.sign_button);
 
         listView = findViewById(R.id.sign_user_list);
+
     }
 
     @Override

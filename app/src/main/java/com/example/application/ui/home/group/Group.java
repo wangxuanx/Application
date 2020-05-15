@@ -17,6 +17,10 @@ public class Group {
         this.GroupDescribe = GroupDescribe;
     }
 
+    public Group(){
+
+    }
+
     public void setGroupID(String groupID) {
         GroupID = groupID;
     }

@@ -35,18 +35,24 @@ public class GroupAdapter extends ArrayAdapter<Group> {
      */
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+
         Group group = getItem(position);  //获取当前项的Fruit实例
+
         //为子项动态加载布局
         View view = LayoutInflater.from(getContext()).inflate(resourceId, null);
         ImageView GroupImage = (ImageView) view.findViewById(R.id.group_image);
         TextView GroupName = (TextView) view.findViewById(R.id.group_name);
         TextView GroupDescribe = view.findViewById(R.id.group_describe);
+        TextView newText = view.findViewById(R.id.new_message_view);
+
         view.setTag(group.getGroupID());           //设置view的Tag
         GroupImage.setImageResource(group.getImageID());
         GroupName.setText(group.getGroupName());
         GroupDescribe.setText(group.getGroupDescribe());
         return view;
     }
+
+
 
     @Override
     public int getPosition(@Nullable Group item) {

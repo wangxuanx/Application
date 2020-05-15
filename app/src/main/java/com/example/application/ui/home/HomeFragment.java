@@ -1,7 +1,10 @@
 package com.example.application.ui.home;
 
-import android.content.Context;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,32 +21,32 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.ViewModelProviders;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.application.R;
+import com.example.application.face.utils.DatabaseHelper;
 import com.example.application.http.HttpsUtil;
-import com.example.application.http.SharedPrefUtil;
+import com.example.application.ui.SQL;
 import com.example.application.ui.home.group.Group;
 import com.example.application.ui.home.group.GroupActivity;
 import com.example.application.ui.home.group.GroupAdapter;
-import com.example.application.ui.home.msg.Msg;
 import com.example.application.ui.home.scan.ScanActivity;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.tencent.imsdk.TIMConversation;
+import com.tencent.imsdk.TIMConversationType;
 import com.tencent.imsdk.TIMElem;
 import com.tencent.imsdk.TIMElemType;
 import com.tencent.imsdk.TIMGroupManager;
 import com.tencent.imsdk.TIMGroupSystemElem;
-import com.tencent.imsdk.TIMGroupSystemElemType;
 import com.tencent.imsdk.TIMManager;
 import com.tencent.imsdk.TIMMessage;
 import com.tencent.imsdk.TIMMessageListener;
 import com.tencent.imsdk.TIMTextElem;
 import com.tencent.imsdk.TIMValueCallBack;
 import com.tencent.imsdk.ext.group.TIMGroupBaseInfo;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +55,6 @@ import static com.tencent.imsdk.TIMGroupSystemElemType.TIM_GROUP_SYSTEM_ADD_GROU
 
 public class HomeFragment extends Fragment {
 
-    private HomeViewModel homeViewModel;
     private ListView listView;
     private SwipeRefreshLayout swipeRefreshLayout;
     private TextView newTextView;         //显示新消息红点
@@ -61,18 +63,16 @@ public class HomeFragment extends Fragment {
     private GroupAdapter groupAdapter;
     private String AddGroupID;
     private String AddGroupUser;
+    private String List = "";
+    private List<String> groupList = new ArrayList<>();
 
     public static final int SEARCH = 101;
 
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        initList();          //显示已加入的群组
-
-        System.out.println("home被创建了");
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        homeViewModel = ViewModelProviders.of(this).get(HomeViewModel.class);
         View root = inflater.inflate(R.layout.fragment_home, container, false);
 
         listView = root.findViewById(R.id.home_list);
@@ -82,12 +82,13 @@ public class HomeFragment extends Fragment {
         setHasOptionsMenu(true);             /**添加右上角menu*/
         swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.blue));
 
-        Group group = new Group(R.drawable.default_head, "efaf&jdf","all[i].trim()", "test");
-        GroupList.add(group);
+        initList();          //显示已加入的群组
+
 
         groupAdapter = new GroupAdapter(getContext(), R.layout.group_item, GroupList);
-        groupAdapter.notifyDataSetChanged();
         listView.setAdapter(groupAdapter);
+        groupAdapter.notifyDataSetChanged();
+
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {       //点击事件
             @Override
@@ -99,8 +100,9 @@ public class HomeFragment extends Fragment {
                 intent.putExtra("groupid", group.getGroupID());          //发送群组id
                 startActivity(intent);
 
-                View view1 = listView.getChildAt(listView.getFirstVisiblePosition());
-                view1.findViewById(R.id.new_message_view).setVisibility(View.VISIBLE);
+                view.findViewById(R.id.new_message_view).setVisibility(View.GONE);
+                TextView textView = view.findViewById(R.id.group_describe);
+                textView.setTextColor(Color.rgb(67,67,67));
 
                 Toast.makeText(getContext(), view.getTag().toString(), Toast.LENGTH_SHORT).show();
             }
@@ -120,12 +122,11 @@ public class HomeFragment extends Fragment {
                         if(GroupList.size() != 0){
 
                             groupAdapter = new GroupAdapter(getContext(), R.layout.group_item, GroupList);
-                            groupAdapter.notifyDataSetChanged();
                             listView.setAdapter(groupAdapter);
+                            groupAdapter.notifyDataSetChanged();
                         }
                     }
                 });
-
 
                 swipeRefreshLayout.setRefreshing(false);
             }
@@ -173,9 +174,11 @@ public class HomeFragment extends Fragment {
 
     private void initList() {             //调用api来获取已经加入的群组
 
+        System.out.println("获取数据了！！！");
+
         /**
          * 获取加入的群组列表
-         * */
+         */
         //创建回调
         TIMValueCallBack<List<TIMGroupBaseInfo>> cb = new TIMValueCallBack<List<TIMGroupBaseInfo>>() {
             @Override
@@ -191,8 +194,59 @@ public class HomeFragment extends Fragment {
 
                 for(TIMGroupBaseInfo info : timGroupInfos) {
 
-                    Group group = new Group(R.drawable.default_head, info.getGroupId(), info.getGroupName(), "test");
-                    GroupList.add(group);
+                    DatabaseHelper databaseHelper1 = new DatabaseHelper(getContext(), "group_list", null, 1, SQL.sql_create_group_list);       //向数据库插入数据
+                    SQLiteDatabase db = databaseHelper1.getWritableDatabase();
+
+                    Cursor cursor = db.query("group_list", null, "group_id = ?", new String[]{info.getGroupId()}, null, null, "id");
+                    if (cursor.getCount() == 0) {
+                        ContentValues values = new ContentValues();
+                        values.put("group_id", info.getGroupId());
+                        values.put("group_name", info.getGroupName());
+
+                        db.insert("group_list", null, values);
+                    }
+
+                    //获取会话扩展实例
+                    TIMConversation con = TIMManager.getInstance().getConversation(TIMConversationType.Group, info.getGroupId());
+
+                    //获取此会话的消息
+                    con.getLocalMessage(1, //获取此会话最近的 10 条消息
+                            null, //不指定从哪条消息开始获取 - 等同于从最新的消息开始往前
+                            new TIMValueCallBack<List<TIMMessage>>() {//回调接口
+                                @Override
+                                public void onError(int code, String desc) {//获取消息失败
+                                    //接口返回了错误码 code 和错误描述 desc，可用于定位请求失败原因
+                                    //错误码 code 含义请参见错误码表
+                                    Log.d("tag", "get message failed. code: " + code + " errmsg: " + desc);
+                                }
+
+                                @Override
+                                public void onSuccess(List<TIMMessage> msgs) {//获取消息成功
+                                    //遍历取得的消息
+                                    for(TIMMessage msg : msgs) {
+
+                                        for(int i = 0; i < msg.getElementCount(); ++i) {
+                                            TIMElem elem = msg.getElement(i);
+
+                                            //获取当前元素的类型
+                                            TIMElemType elemType = elem.getType();
+                                            Log.d("tag", "elem type: " + elemType.name());
+                                            if (elemType == TIMElemType.Text) {
+                                                TIMTextElem textElem = (TIMTextElem) elem;
+
+                                                ContentValues values1 = new ContentValues();
+                                                values1.put("last_message", textElem.getText());         //更新最新消息
+                                                db.update("group_list", values1, "group_id = ?", new String[]{info.getGroupId()});
+                                            }
+                                        }
+
+                                        //可以通过 timestamp()获得消息的时间戳, isSelf()是否为自己发送的消息
+                                        Log.e("tag", "get msg: " + msg.timestamp() + " self: " + msg.isSelf() + " seq: " + msg.getSeq());
+
+
+                                    }
+                                }
+                            });
 
                     Log.d("tag", "group id: " + info.getGroupId() +
                             " group name: " + info.getGroupName() +
@@ -204,6 +258,28 @@ public class HomeFragment extends Fragment {
         //获取已加入的群组列表
         TIMGroupManager.getInstance().getGroupList(cb);
 
+        /**从数据库查找数据*/
+        DatabaseHelper databaseHelper = new DatabaseHelper(getContext(), "group_list", null, 1, SQL.sql_create_group_list);
+        SQLiteDatabase db = databaseHelper.getWritableDatabase();
+        Cursor cursor = db.query("group_list", null, null, null, null, null, "group_id");
+        cursor.moveToFirst();
+        while(!cursor.isAfterLast() && (cursor.getString(1) != null)){
+
+            Group group1 = new Group();
+            group1.setImageID(R.drawable.default_head);
+            group1.setGroupID(cursor.getString(1));
+            group1.setGroupName(cursor.getString(2));
+            group1.setGroupDescribe(cursor.getString(3));
+
+            groupList.add(cursor.getString(1));
+
+            List = List + cursor.getString(2) + "%23%23";
+
+            GroupList.add(group1);
+            cursor.moveToNext();
+        }
+
+        initData();
 
         /*String user = SharedPrefUtil.getUserName(getContext());
         System.out.println("用户" + user);
@@ -249,7 +325,7 @@ public class HomeFragment extends Fragment {
                 Toast.makeText(getContext(), "扫描失败！！", Toast.LENGTH_LONG).show();
             } else {
                 String group_info = result.getContents();         //扫描得到到内容
-                String[] info = group_info.split("$");         //分割开群名称与群id
+                String[] info = group_info.split(",");         //分割开群名称与群id
                 Intent intent = new Intent(getActivity(), AddGroupActivity.class);
                 intent.putExtra("groupName", info[0]);
                 intent.putExtra("groupid", info[1]);
@@ -260,46 +336,28 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private void getUserAddGroup(){           //获取用户加群信息
+    private void getUserAddGroup(){           //获取用户加群信息和新消息
+
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     while (true){
+
                         /**接收申请加群消息*/
-                        TIMGroupSystemElem timGroupSystemElem = new TIMGroupSystemElem();
-                        TIMGroupSystemElemType timGroupSystemElemType = timGroupSystemElem.getSubtype();         //获取申请加群
-                        if(timGroupSystemElemType.equals(TIM_GROUP_SYSTEM_ADD_GROUP_REQUEST_TYPE)){
-                            AddGroupID = timGroupSystemElem.getGroupId();         //获取群组ID
-                            AddGroupUser = timGroupSystemElem.getOpUser();         //获取申请加群人
-                            String url = "https://120.26.172.16:8443/AndroidTest/AddUserToGroup?username="+AddGroupUser+"&groupid="+AddGroupID;
-                            /*HttpsUtil.getInstance().get(url, new HttpsUtil.OnRequestCallBack() {
-                                @Override
-                                public void onSuccess(String s) {
-                                    Log.d("log", "加入群组失败");
-                                }
-
-                                @Override
-                                public void onFail(Exception e) {
-                                    Log.d("log", "加入群组成功");
-                                }
-                            });*/
-                        }
-
-                        Log.i("info", "获取加群信息");
-
                         /**接收新消息*/
                         //设置消息监听器，收到新消息时，通过此监听器回调
                         TIMManager.getInstance().addMessageListener(new TIMMessageListener() {
                             @Override
                             public boolean onNewMessages(List<TIMMessage> list) {          //收到新消息
-                                newTextView.setVisibility(View.VISIBLE);
-                                Log.d("log", "获取新消息");
+                                //newTextView.setVisibility(View.VISIBLE);
+                                Log.d("info", "获取新消息");
 
                                 for(int i = list.size() - 1; i >= 0; --i){
                                     TIMMessage message = list.get(i);
                                     TIMConversation conversation = message.getConversation();
                                     String groupId = conversation.getPeer();          //获取群组ID
+                                    System.out.println("群组🆔"+groupId);
 
                                     for(int j = 0; j< message.getElementCount(); ++j) {
                                         TIMElem elem = message.getElement(i);
@@ -309,19 +367,40 @@ public class HomeFragment extends Fragment {
                                         Log.d("tag", "elem type: " + elemType.name());
                                         if (elemType == TIMElemType.Text) {
                                             TIMTextElem textElem = (TIMTextElem)elem;
-                                            System.out.println(textElem.getText());         //消息内容
+                                            System.out.println(textElem.getText()+" "+listView.getCount());         //消息内容
+
+                                            freshList(groupId, textElem.getText());       //刷新显示新消息
+
+                                        } else if (elemType == TIMElemType.GroupSystem) {         //群组消息
+                                            TIMGroupSystemElem systemElem = (TIMGroupSystemElem) elem;
+                                            System.out.println("加群消息："+systemElem.getSubtype()+" "+systemElem.getGroupId()+" "+systemElem.getOpUser()+" "+systemElem.getOpReason());
+
+                                            AddGroupID = systemElem.getGroupId().replace("#", "%23");         //获取群组ID
+                                            AddGroupUser = systemElem.getOpUser();         //获取申请加群人
+                                            String url = "https://120.26.172.16:8443/AndroidTest/AddUserToGroup?username="+AddGroupUser+"&groupid="+AddGroupID;
+                                            System.out.println(url);
+                                            HttpsUtil.getInstance().get(url, new HttpsUtil.OnRequestCallBack() {
+                                                @Override
+                                                public void onSuccess(String s) {
+                                                    System.out.println(s);
+                                                    Log.d("log", "加入群组成功");
+
+                                                    initList();          //刷新列表
+                                                }
+
+                                                @Override
+                                                public void onFail(Exception e) {
+                                                    Log.d("log", "加入群组失败");
+                                                }
+                                            });
                                         }
                                     }
-
-                                    View view = listView.findViewWithTag(groupId);       //获取要改变的ListView的item
-                                    view.findViewById(R.id.new_message_view).setVisibility(View.VISIBLE);         //显示小红点
-                                    //view.findViewById(R.id.group_describe);
                                 }
                                 return false;     //返回true将终止回调链，不再调用下一个新消息监听器
                             }
                         });
 
-                        Thread.sleep(10000);
+                        Thread.sleep(5000);
                     }
                 } catch (Exception e){
                     e.printStackTrace();
@@ -330,19 +409,95 @@ public class HomeFragment extends Fragment {
         }).start();
     }
 
-    public void updateItemView(int position) {
-        //得到第一个可显示控件的位置，
-        int visiblePosition = listView.getFirstVisiblePosition();
-        //只有当要更新的view在可见的位置时才更新，不可见时，跳过不更新
-        int index = position - visiblePosition;
-        if (index >= 0) {
-            //得到要更新的item的view
-            View view = listView.getChildAt(index);
-            //从view中取得holder
-            //groupAdapter.ViewHolder holder = (groupAdapter.ViewHolder) view.getTag();
-            //更改状态
-            //holder.textview.setText("测试数据");
+    private void freshList(String groupId, String content) {
+        int position = 0;
+        for (int i = 0; i < groupList.size(); i++){
+            if (groupList.get(i).equals(groupId)){
+                position = i;
+            }
         }
+
+        View view = listView.getChildAt(position);
+        TextView textView = view.findViewById(R.id.group_describe);
+        TextView textView1 = view.findViewById(R.id.new_message_view);
+        textView1.setVisibility(View.VISIBLE);
+        textView.setText(content);
+        textView.setTextColor(Color.RED);
+    }
+
+    private void initData(){           //初始化签到数据
+        String list = List.substring(0, List.length() - 6);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    while (true){
+                        System.out.println("获取签到数据");
+
+                        String url = "https://120.26.172.16:8443/AndroidTest/GetSign?grouplist="+list;
+                        System.out.println(url);
+                        HttpsUtil.getInstance().get(url, new HttpsUtil.OnRequestCallBack() {
+                            @Override
+                            public void onSuccess(String s) {
+                                Log.i("log", "获取签到数据成功");
+                                System.out.println(s);
+                                /**创建签到的数据库*/
+                                DatabaseHelper databaseHelper = new DatabaseHelper(getContext(), "app_data", null, 1, SQL.sql_create_sign_list);
+                                databaseHelper.CreateTable();
+                                SQLiteDatabase db = databaseHelper.getWritableDatabase();
+
+                                try {
+                                    JSONObject jsonObject = new JSONObject(s);
+                                    int size = jsonObject.getInt("total");        //获取总共的签到条数
+
+                                    for (int i = 1; i <= size; i++){
+                                        JSONObject object = jsonObject.getJSONObject(String.valueOf(i));          //获取签到的object
+                                        System.out.println(object.toString());
+                                        String title = object.getString("signName");
+                                        String type = object.getString("signType");
+                                        String deadline_time = object.getString("dead_time");
+                                        String password = object.getString("password");
+                                        String groupName = object.getString("signGroup");
+                                        String createUser = object.getString("signCreatUser");
+
+                                        Cursor cursor = db.query("sign_list", null, "deadline_time = ?", new String[]{deadline_time}, null, null, "id");
+                                        if (cursor.getCount() == 0) {
+                                            ContentValues values = new ContentValues();
+                                            values.put("title", title);
+                                            values.put("type", type);
+                                            values.put("deadline_time", deadline_time);
+                                            values.put("password", password);
+                                            values.put("groupName", groupName);
+                                            values.put("createUser", createUser);
+
+                                            db.insert("sign_list", null, values);
+
+                                        }
+                                    }
+                                } catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                            }
+
+                            @Override
+                            public void onFail(Exception e) {
+                                Log.i("log", "获取签到失败");
+                            }
+                        });
+
+                        Thread.sleep(5000);
+                    }
+
+                } catch (Exception e){
+                    e.printStackTrace();
+                } finally {
+                    List = "";
+                }
+
+            }
+        }).start();
+
     }
 
 }
