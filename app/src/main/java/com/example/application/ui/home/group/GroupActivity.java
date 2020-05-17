@@ -35,6 +35,8 @@ import android.widget.Toast;
 import com.example.application.R;
 import com.example.application.face.utils.DatabaseHelper;
 import com.example.application.face.utils.LogUtil;
+import com.example.application.http.SharedPrefUtil;
+import com.example.application.ui.SQL;
 import com.example.application.ui.dashboard.Check;
 import com.example.application.ui.home.SignInActivity;
 import com.example.application.ui.home.msg.Msg;
@@ -70,7 +72,6 @@ public class GroupActivity extends AppCompatActivity {
 
     private String title;
     private String groupID;
-    private String sql = "CREATE TABLE IF NOT EXISTS sign_list (id integer primary key, title varchar(255) not null, type varchar(5) not null, deadline_time varchar(255) not null, password varchar(10) not null, groupName varchar(255) not null, createUser varchar(255) not null)";
     private int type;
 
     private List<Msg> msgList = new ArrayList<>();
@@ -88,7 +89,10 @@ public class GroupActivity extends AppCompatActivity {
     private final int INFO = 111;
 
     private String SQL;          //数据库sql语句
-    private String sql_sign;
+
+    private String Sign_Title;            //签到名称
+    private String Sign_Create_User;         //签到创建人
+    private String Sign_Password;          //手势签到密码
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -239,8 +243,10 @@ public class GroupActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(GroupActivity.this, MainSignActivity.class);
                 intent.putExtra("type", type);
+                intent.putExtra("name", Sign_Title);
+                intent.putExtra("user", Sign_Create_User);
                 if (type == HANDS){           //如果是手势签到，要额外的发送数据
-
+                    intent.putExtra("password", Sign_Password);
                 }
                 startActivity(intent);
             }
@@ -281,6 +287,7 @@ public class GroupActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == FACE || requestCode == HANDS){
+            String password = data.getStringExtra("password");         //获取密码
             String name = data.getStringExtra("name");
             int hour = data.getIntExtra("hour", 0);
             int minute = data.getIntExtra("minute", 0);
@@ -288,6 +295,9 @@ public class GroupActivity extends AppCompatActivity {
             leftTime = hour*3600 + minute*60 + second;
 
             signName.setText(name);
+            Sign_Title = name;
+            Sign_Create_User = SharedPrefUtil.getUserName(getApplicationContext());
+            Sign_Password = password;
         }
 
         switch (requestCode){
@@ -358,8 +368,9 @@ public class GroupActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        /*leftTime = 0;
-        handler.removeCallbacks(update_thread);*/
+
+        leftTime = 0;
+        handler.removeCallbacks(update_thread);
     }
 
     private String formatLongToTimeStr(Long l) {
@@ -500,22 +511,37 @@ public class GroupActivity extends AppCompatActivity {
         SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
         System.out.println("当前时间："+dateFormat.format(curTime));
 
-        DatabaseHelper databaseHelper = new DatabaseHelper(this, "app_data", null, 1, sql);
+        DatabaseHelper databaseHelper = new DatabaseHelper(this, "app_data", null, 1, com.example.application.ui.SQL.sql_create_sign_list);
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
-        Cursor cursor = db.query("sign_list", null, "groupName = ?", new String[]{title}, null, null, "id");       //搜索可用的签到
+        Cursor cursor = db.query("sign_list", null, "groupName = ? and deadline_time > ?", new String[]{title, String.valueOf(curTime.getTime() / 1000)}, null, null, "id");       //搜索可用的签到
         cursor.moveToFirst();
         while(!cursor.isAfterLast() && (cursor.getString(1) != null)){
             String title = cursor.getString(1);            //获取title
-            String type = cursor.getString(2);
+            String signtype = cursor.getString(2);
             String deadline_time = cursor.getString(3);
             String password = cursor.getString(4);
             String groupName = cursor.getString(5);
-            String creatUser = cursor.getString(6);
+            String createUser = cursor.getString(6);
+            int state = cursor.getInt(7);
 
-            System.out.println(title+" "+type+" "+deadline_time+" "+password+" "+groupName+" "+creatUser);
+            if (state != 1){           //不为1说明还未签到
+                System.out.println(Long.parseLong(deadline_time));
+                System.out.println(curTime.getTime() / 1000);
+                long Time = Long.parseLong(deadline_time) - curTime.getTime() / 1000;
+                leftTime = Time;
+
+                signName.setText(title);
+                Sign_Title = title;
+                Sign_Create_User = createUser;
+                type = Integer.parseInt(signtype);
+                handler.postDelayed(update_thread, 1000);
+            }
+            System.out.println(title+" "+type+" "+deadline_time+" "+password+" "+groupName+" "+createUser+" "+state);
 
             cursor.moveToNext();
         }
     }
+
+
 
 }

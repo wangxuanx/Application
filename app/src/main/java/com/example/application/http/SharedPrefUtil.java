@@ -2,6 +2,7 @@ package com.example.application.http;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 
@@ -17,7 +18,6 @@ public class SharedPrefUtil {
     public static final String LOCAL="local";                // 用户地址
     public static final String IS_LOGIN="isLogin";
     public static final String FACE_STATE="state";             //人脸是否注册的状态
-    public static String USER_NAME;
 
     /**
      * save data into FILE_NAME ,this path is data/data/POCKET_NAME/shared_prefs
@@ -90,6 +90,18 @@ public class SharedPrefUtil {
         SharedPreferences sp = context.getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
         editor.remove(key);
+        editor.apply();
+    }
+
+    public static void removeAll(Context context){
+        SharedPreferences sp = context.getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.remove(LOGIN_DATA);
+        editor.remove(REAL_NAME);
+        editor.remove(SEX);
+        editor.remove(LOCAL);
+        editor.remove(IS_LOGIN);
+        editor.remove(FACE_STATE);
         editor.apply();
     }
 

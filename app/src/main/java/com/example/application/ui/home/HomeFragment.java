@@ -1,5 +1,6 @@
 package com.example.application.ui.home;
 
+import android.app.ActivityManager;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
@@ -51,8 +52,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.tencent.imsdk.TIMGroupSystemElemType.TIM_GROUP_SYSTEM_ADD_GROUP_REQUEST_TYPE;
-
 public class HomeFragment extends Fragment {
 
     private ListView listView;
@@ -67,6 +66,8 @@ public class HomeFragment extends Fragment {
     private List<String> groupList = new ArrayList<>();
 
     public static final int SEARCH = 101;
+
+    private static ActivityManager activityManager;
 
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -338,7 +339,7 @@ public class HomeFragment extends Fragment {
 
     private void getUserAddGroup(){           //获取用户加群信息和新消息
 
-        new Thread(new Runnable() {
+        Thread new_group = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -406,7 +407,9 @@ public class HomeFragment extends Fragment {
                     e.printStackTrace();
                 }
             }
-        }).start();
+        });
+
+        new_group.start();
     }
 
     private void freshList(String groupId, String content) {
@@ -426,22 +429,29 @@ public class HomeFragment extends Fragment {
     }
 
     private void initData(){           //初始化签到数据
-        String list = List.substring(0, List.length() - 6);
+        String list = "";
 
-        new Thread(new Runnable() {
+        if (List.length() != 0){
+             list = List.substring(0, List.length() - 6);
+        }
+
+        String finalList = list;
+
+        Thread new_check = new Thread(new Runnable() {
             @Override
             public void run() {
+
                 try {
                     while (true){
                         System.out.println("获取签到数据");
 
-                        String url = "https://120.26.172.16:8443/AndroidTest/GetSign?grouplist="+list;
-                        System.out.println(url);
+                        String url = "https://120.26.172.16:8443/AndroidTest/GetSign?grouplist="+ finalList;
+                        //System.out.println(url);
                         HttpsUtil.getInstance().get(url, new HttpsUtil.OnRequestCallBack() {
                             @Override
                             public void onSuccess(String s) {
                                 Log.i("log", "获取签到数据成功");
-                                System.out.println(s);
+                                //System.out.println(s);
                                 /**创建签到的数据库*/
                                 DatabaseHelper databaseHelper = new DatabaseHelper(getContext(), "app_data", null, 1, SQL.sql_create_sign_list);
                                 databaseHelper.CreateTable();
@@ -456,12 +466,15 @@ public class HomeFragment extends Fragment {
                                         System.out.println(object.toString());
                                         String title = object.getString("signName");
                                         String type = object.getString("signType");
-                                        String deadline_time = object.getString("dead_time");
+                                        String dead_time = object.getString("dead_time").substring(0, object.getString("dead_time").length() - 2);
                                         String password = object.getString("password");
                                         String groupName = object.getString("signGroup");
                                         String createUser = object.getString("signCreatUser");
 
-                                        Cursor cursor = db.query("sign_list", null, "deadline_time = ?", new String[]{deadline_time}, null, null, "id");
+                                        System.out.println(dead_time);
+                                        long deadline_time = SQL.DataToLang(dead_time);           //将时间转化为long格式
+
+                                        Cursor cursor = db.query("sign_list", null, "deadline_time = ?", new String[]{String.valueOf(deadline_time)}, null, null, "id");
                                         if (cursor.getCount() == 0) {
                                             ContentValues values = new ContentValues();
                                             values.put("title", title);
@@ -470,6 +483,7 @@ public class HomeFragment extends Fragment {
                                             values.put("password", password);
                                             values.put("groupName", groupName);
                                             values.put("createUser", createUser);
+                                            values.put("state", 0);
 
                                             db.insert("sign_list", null, values);
 
@@ -496,8 +510,9 @@ public class HomeFragment extends Fragment {
                 }
 
             }
-        }).start();
+        });
 
+        new_check.start();
     }
 
 }

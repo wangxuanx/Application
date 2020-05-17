@@ -4,15 +4,8 @@ import android.Manifest;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.WindowManager;
-
-import com.example.application.ui.home.group.Group;
+import com.facebook.stetho.Stetho;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.idescout.sql.SqlScoutServer;
-import com.tencent.imsdk.TIMValueCallBack;
-import com.tencent.imsdk.ext.group.TIMGroupBaseInfo;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -35,9 +28,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        closeAndroidPDialog();              //若是Android P，去除提示
+        closeAndroidPDialog();              //若是Android P，去除提
 
-        SqlScoutServer.create(this, getPackageName());
+        Stetho.initializeWithDefaults(this);        //sql调试
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // menu should be considered as top level destinations.

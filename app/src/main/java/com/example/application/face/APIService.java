@@ -1,10 +1,12 @@
 package com.example.application.face;
 
+import android.os.Handler;
 import android.util.Base64;
 
 import com.example.application.face.utils.GsonUtils;
 import com.example.application.face.utils.Md5;
 import com.example.application.http.HttpUtil;
+import com.example.application.http.HttpsUtil;
 import com.example.application.http.SharedPrefUtil;
 
 import java.io.File;
@@ -33,103 +35,118 @@ public class APIService {
     /**
     注册人脸
      */
-    public static void RegFace(File file, String user_id){
+    public static String RegFace(File file, String user_id){
         String BASE64Img;         //图片base64值
         String userID = user_id;          //用户id
+        final String[] back = new String[1];
         try {
             byte[] buf = readFile(file);
             BASE64Img = new String(Base64.encode(buf, Base64.NO_WRAP));      //转化为BSAE64、
-            System.out.println("人脸图片BASE64:");
-            System.out.println(BASE64Img);
 
-            new Thread(){
+            String url = "https://120.26.172.16:8443/AndroidTest/faceRegist";
+            Map<String, Object> map = new HashMap<>();
+            map.put("image", BASE64Img);
+            map.put("user_id", userID);
+
+            String body = GsonUtils.toJson(map);
+
+            android.os.Handler handler = new Handler();
+            Thread thread = new Thread(new Runnable() {
+
                 @Override
                 public void run() {
-                    try{
-                        String url = "https://120.26.172.16:8443/AndroidTest/faceRegist";
-                        String Content_Type	= "application/json";
-                        Map<String, Object> map = new HashMap<>();
-                        map.put("image", BASE64Img);
-                        map.put("user_id", user_id);
-
-                        String body = GsonUtils.toJson(map);
-
-                        String response = HttpUtil.post(url, Content_Type, body);      //发送请求并返回结果
-                        System.out.println("返回结果：");
-                        System.out.println(response);
-                    } catch (Exception e){
+                    try {
+                        String response = HttpsUtil.getInstance().sendPost(url, body, null);      //发送请求并返回结果
+                        back[0] = response;
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
-            }.start();
+
+
+            });
+
+            thread.start();
+            Thread.sleep(3000);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return back[0];
     }
 
     /**
     更新用户信息
      */
-    public static void updateUserInfo(int type, String info, String username){
+    public static String updateUserInfo(int type, String info, String username){
+        String url="https://120.26.172.16:8443/AndroidTest/updateUserInfo";
+        Map<String, Object> map = new HashMap<>();
+        map.put("type", type);
+        map.put("info", info);
+        map.put("username", username);
+
+        String body = GsonUtils.toJson(map);
+        final String[] result = new String[1];
+
         new Thread(){
             @Override
             public void run() {
                 try {
-                    String path="https://120.26.172.16:8443/AndroidTest/updateUserInfo";
-                    String Content_Type	= "application/json";
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("type", type);
-                    map.put("info", info);
-                    map.put("username", username);
 
-                    String body = GsonUtils.toJson(map);
-
-                    String response = HttpUtil.post(path, Content_Type, body);      //发送请求并返回结果
-                    System.out.println("返回结果：");
-                    System.out.println(response);
+                    String response = HttpsUtil.getInstance().sendPost(url, body, null);     //发送请求并返回结果
+                    result[0] = response;
                 }catch (Exception e){
                     e.printStackTrace();
                 }
             }
         }.start();
 
+        try {
+            Thread.sleep(3000);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result[0];
     }
 
     /**
      * 搜索人脸信息
      * */
 
-    public static void SearchFace(File file, String user_id){
+    public static String SearchFace(File file, String user_id){             //判断人脸是否存在
         String BASE64Img;         //图片base64值
         String userID = user_id;          //用户id
+        final String[] result = new String[1];      //返回值
+
         try {
             byte[] buf = readFile(file);
-            BASE64Img = new String(Base64.encode(buf, Base64.NO_WRAP));      //转化为BSAE64、
-            System.out.println("人脸图片BASE64:");
-            System.out.println(BASE64Img);
+            BASE64Img = new String(Base64.encode(buf, Base64.NO_WRAP));      //转化为BSAE64
+
+            String url = "https://120.26.172.16:8443/AndroidTest/SearchFace";
+            String Content_Type	= "application/json";
+            Map<String, Object> map = new HashMap<>();
+            map.put("image", BASE64Img);
+            map.put("user_id", userID);
+            String body = GsonUtils.toJson(map);
 
             new Thread(){
                 @Override
                 public void run() {
                     try{
-                        String url = "https://120.26.172.16:8443/AndroidTest/SearchFace";
-                        String Content_Type	= "application/json";
-                        Map<String, Object> map = new HashMap<>();
-                        map.put("image", BASE64Img);
-                        map.put("user_id", user_id);
-
-                        String body = GsonUtils.toJson(map);
-
-                        String response = HttpUtil.post(url, Content_Type, body);      //发送请求并返回结果
-                        System.out.println("返回结果：");
-                        System.out.println(response);
+                        String response = HttpsUtil.getInstance().sendPost(url, body, null);      //发送请求并返回结果
+                        result[0] = response;
                     } catch (Exception e){
                         e.printStackTrace();
                     }
                 }
             }.start();
+
+            Thread.sleep(3500);
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return result[0];
     }
 }

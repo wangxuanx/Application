@@ -9,7 +9,8 @@ android {
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        multiDexEnabled true
     }
     android {
         //use legacy for android 6.0
@@ -80,6 +81,6 @@ dependencies {
     api 'com.tencent.imsdk:imsdk:4.8.1'           //腾讯即时通讯IM
     implementation 'com.github.wangfeng19930909:DragFloatingActionButton:1.0.1'       //悬浮按钮
     implementation 'com.contrarywind:Android-PickerView:4.1.9'//滚动选择器
-    debugImplementation 'com.idescout.sql:sqlscout-server:4.1'
-    releaseImplementation 'com.idescout.sql:sqlscout-server-noop:4.1'
+    implementation 'com.facebook.stetho:stetho:1.5.1'         //sql调试工具 chrome://inspect/#devices
+    implementation 'com.android.support:multidex:1.0.3'
 }

@@ -57,6 +57,7 @@ public class SignInActivity extends AppCompatActivity {
 
         int type = getIntent().getIntExtra("type", FACE);
         String group = getIntent().getStringExtra("group");       //群组名称
+        intent = new Intent();
 
         switch (type) {
             case FACE:
@@ -72,6 +73,8 @@ public class SignInActivity extends AppCompatActivity {
         gestureLockView.setOnCheckPasswordListener(new GestureLockView.OnCheckPasswordListener() {
             @Override
             public boolean onCheckPassword(String passwod) {
+                intent.putExtra("password", passwod);
+
                 System.out.println(passwod.charAt(0));
                 handsView.setPassword(passwod);
                 handsView.invalidate();         //重新绘制
@@ -125,7 +128,6 @@ public class SignInActivity extends AppCompatActivity {
             public void onClick(View view) {
                 String Title = editText.getText().toString().trim();        //获取签到的名称
 
-                intent = new Intent();
                 intent.putExtra("name", Title);
                 intent.putExtra("time", time);
                 intent.putExtra("hour", hour);

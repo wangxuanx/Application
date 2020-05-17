@@ -282,6 +282,7 @@ public class LeaveActivity extends AppCompatActivity {
                     TIMGroupManager.getInstance().getGroupMembers(
                             info.getGroupId(), //群组 ID
                             cb);     //回调
+
                     /**
                      *
                      * */

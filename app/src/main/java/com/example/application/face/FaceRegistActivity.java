@@ -47,7 +47,6 @@ public class FaceRegistActivity extends Activity {
             public void onClick(View view) {
                 Intent intent = new Intent(FaceRegistActivity.this, FaceDetectActivity.class);            //启动注册人脸进程
                 startActivityForResult(intent, FACE);
-
             }
         });
     }
@@ -69,19 +68,18 @@ public class FaceRegistActivity extends Activity {
                     final File file = new File(filePath);
                     System.out.println("输出文件");
                     System.out.println(file);
-                    APIService.getInstance().RegFace(file, Md5.MD5(SharedPrefUtil.getUserName(this), "utf-8"));         //调用api进行人脸注册操作
+                    String back = APIService.getInstance().RegFace(file, Md5.MD5(SharedPrefUtil.getUserName(this), "utf-8"));         //调用api进行人脸注册操作
 
-                    new Handler().postDelayed(new Runnable(){
-                        public void run() {
-                            //execute the task
-                            imageView.setImageResource(R.drawable.face_ok);
-                            textView.setText("恭喜，人脸已完成注册！");
-                            button.setText("注册完成");
-                            button.setEnabled(false);
-                        }
-                    }, 0);
+                    System.out.println(back);
+
+                    if (back.equals("SUCCESS")){
+                        imageView.setImageResource(R.drawable.face_ok);
+                        textView.setText("恭喜，人脸已完成注册！");
+                        button.setText("注册完成");
+                        button.setEnabled(false);
+                    }
+
                 }
-
 
                 break;
         }

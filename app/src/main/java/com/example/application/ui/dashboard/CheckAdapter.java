@@ -44,6 +44,7 @@ public class CheckAdapter extends ArrayAdapter<Check> {
         TextView Title = view.findViewById(R.id.check_title);
         TextView Type = view.findViewById(R.id.check_type);
         TextView User = view.findViewById(R.id.check_user);
+        TextView otherInfo = view.findViewById(R.id.other_text);
         TextView BeginTime = view.findViewById(R.id.beginTime);
         TextView EndTime = view.findViewById(R.id.endTime);
         TextView State = view.findViewById(R.id.check_state);
@@ -51,6 +52,7 @@ public class CheckAdapter extends ArrayAdapter<Check> {
         Title.setText(check.getTitle());
         Type.setText(check.getType());
         User.setText(check.getUser());
+        otherInfo.setText(check.getOtherInfo());
         BeginTime.setText(check.getBeginTime());
         EndTime.setText(check.getEndTime());
         State.setText(check.getState());

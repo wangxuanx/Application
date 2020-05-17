@@ -576,19 +576,4 @@ public class FaceDetectActivity extends Activity {
         }
     }
 
-    /*
-    Activity执行完成之后连接api进行注册
-     */
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        String filePath = ImageSaveUtil.loadCameraBitmapPath(this, "head_tmp.jpg");
-        Bitmap bitmap = ImageSaveUtil.loadCameraBitmap(this, "head_tmp.jpg");
-        if(!filePath.equals("")){
-            final File file = new File(filePath);
-            System.out.println("输出文件");
-            System.out.println(file);
-            APIService.getInstance().RegFace(file, Md5.MD5(SharedPrefUtil.getUserName(this), "utf-8"));         //调用api进行人脸注册操作
-        }
-    }
 }

@@ -5,10 +5,17 @@
     android:layout_height="match_parent"
     android:background="@color/backColor">
 
-    <ListView
-        android:id="@+id/leave_list"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/leave_swipe_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent">
+
+        <ListView
+            android:id="@+id/leave_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
 
     <com.barnettwong.dragfloatactionbuttonlibrary.view.DragFloatActionButton
         android:id="@+id/circle_button"

@@ -1,6 +1,7 @@
 package com.example.application.ui.notifications;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentUris;
 import android.content.DialogInterface;
@@ -55,6 +56,7 @@ public class NotificationsFragment extends Fragment {
 
     private Uri imageUri;
 
+    public static final int FACE = 100;
     public static final int TAKE_CAMERA = 101;
     public static final int PICK_PHOTO = 102;
 
@@ -139,7 +141,7 @@ public class NotificationsFragment extends Fragment {
             @Override
             public void click(boolean isChecked) {
                 Intent intent = new Intent(getContext(), FaceRegistActivity.class);         //启动判断人脸的Activity，在里面注册人脸
-                getContext().startActivity(intent);
+                startActivity(intent);
             }
         });
 
@@ -178,8 +180,8 @@ public class NotificationsFragment extends Fragment {
                 });
 
                 //删除登录信息
-                SharedPrefUtil.removeParam(getActivity(), SharedPrefUtil.LOGIN_DATA);
-                SharedPrefUtil.removeParam(getActivity(), SharedPrefUtil.IS_LOGIN);
+                //SharedPrefUtil.removeAll(getActivity());
+                SharedPrefUtil.removeParam(getActivity(), SharedPrefUtil.FACE_STATE);
                 //跳转到登录界面
                 Intent intent = new Intent(getActivity(), LoginActivity.class);
                 startActivity(intent);

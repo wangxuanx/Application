@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.application.R;
 import com.example.application.face.APIService;
@@ -42,19 +43,25 @@ public class SetItemActivity extends Activity {
                 if (string.equals("")) {            //为空，不修改
                     finish();
                 } else {       //不为空，修改
-                    APIService.getInstance().updateUserInfo(type, string, user_name);            //调用api更新信息
-                    switch (type){          //判断修改的具体内容
-                        case 102:         //用户名
-                            SharedPrefUtil.setParam(getApplicationContext(), SharedPrefUtil.LOGIN_DATA, string);     //保存用户名
-                            break;
-                        case 103:          //真实姓名
-                            SharedPrefUtil.setParam(getApplication(), SharedPrefUtil.REAL_NAME, string);      //保存真实姓名
-                            break;
-                        case 105:          //地理位置
-                            SharedPrefUtil.setParam(getApplication(), SharedPrefUtil.LOCAL, string);        //保存用户地址
-                            break;
+
+                    String result = APIService.getInstance().updateUserInfo(type, string, user_name);            //调用api更新信息
+
+                    if (result.equals("update successfully!")){
+                        switch (type){          //判断修改的具体内容
+                            case 102:         //用户名
+                                SharedPrefUtil.setParam(getApplicationContext(), SharedPrefUtil.LOGIN_DATA, string);     //保存用户名
+                                break;
+                            case 103:          //真实姓名
+                                SharedPrefUtil.setParam(getApplication(), SharedPrefUtil.REAL_NAME, string);      //保存真实姓名
+                                break;
+                            case 105:          //地理位置
+                                SharedPrefUtil.setParam(getApplication(), SharedPrefUtil.LOCAL, string);        //保存用户地址
+                                break;
+                        }
+                    } else {
+                        Toast.makeText(SetItemActivity.this, "修改失败！", Toast.LENGTH_SHORT).show();
                     }
-                    System.out.println(string);
+
                     finish();
                 }
             }
