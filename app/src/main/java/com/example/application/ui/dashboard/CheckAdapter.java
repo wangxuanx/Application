@@ -48,6 +48,7 @@ public class CheckAdapter extends ArrayAdapter<Check> {
         TextView BeginTime = view.findViewById(R.id.beginTime);
         TextView EndTime = view.findViewById(R.id.endTime);
         TextView State = view.findViewById(R.id.check_state);
+
         view.setTag(check.getId());           //设置view的Tag
         Title.setText(check.getTitle());
         Type.setText(check.getType());
@@ -56,6 +57,14 @@ public class CheckAdapter extends ArrayAdapter<Check> {
         BeginTime.setText(check.getBeginTime());
         EndTime.setText(check.getEndTime());
         State.setText(check.getState());
+
+        if (State.getText().equals("通过审核")) {
+            State.setBackgroundColor(getContext().getResources().getColor(R.color.pass));
+        } else if (State.getText().equals("未通过")) {
+            State.setBackgroundColor(getContext().getResources().getColor(R.color.refuse));
+        }
+
+
         
         return view;
     }

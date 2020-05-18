@@ -4,6 +4,9 @@ import android.Manifest;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+
+import com.example.application.face.utils.DatabaseHelper;
+import com.example.application.ui.SQL;
 import com.facebook.stetho.Stetho;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 

@@ -61,6 +61,8 @@ public class DashboardFragment extends Fragment {
 
         init(root);
 
+        swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.blue));
+
         initData();       //初始化数据
 
         initDataFromServer();       //从服务器获取
@@ -92,7 +94,7 @@ public class DashboardFragment extends Fragment {
                 String endTime = textView4.getText().toString();         //终止时间
                 if (checkTitle.equals("待批准请假条")){
                     String title = "选择操作";
-                    String[] items = new String[]{"通过", "未通过"};
+                    String[] items = new String[]{"通过审核", "未通过"};
                     new AlertDialog.Builder(getContext())
                             .setTitle(title)
                             .setItems(items, new DialogInterface.OnClickListener() {
@@ -102,12 +104,12 @@ public class DashboardFragment extends Fragment {
                                     dialog.dismiss();
                                     switch (which) {
                                         case 0:
-                                            String back = Leave(user, beginTime, endTime, true);
-                                            System.out.println(back);
-                                            /*if (back1.equals("success")){
+                                            String back1 = Leave(user, beginTime, endTime, true);
+                                            System.out.println(back1);
+                                            if (back1.equals("success")){
                                                 textView1.setText("通过审核");
                                                 textView1.setBackgroundColor(getResources().getColor(R.color.pass));
-                                            }*/
+                                            }
                                             break;
                                         case 1:
                                             String back2 = Leave(user, beginTime, endTime, false);
@@ -160,8 +162,8 @@ public class DashboardFragment extends Fragment {
 
         /**从数据库查找数据*/
         DatabaseHelper databaseHelper = new DatabaseHelper(getContext(), "app_data", null, 1, SQL.sql_create_leave_list);
-        databaseHelper.CreateTable();
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
+        databaseHelper.CreateTable(db);
         Cursor cursor = db.query("leave_list", null, null, null, null, null, "id");
         cursor.moveToFirst();
         while(!cursor.isAfterLast() && (cursor.getString(1) != null)){
@@ -179,6 +181,9 @@ public class DashboardFragment extends Fragment {
             checkList.add(check);
             cursor.moveToNext();
         }
+        cursor.close();
+        db.close();
+        databaseHelper.close();
     }
 
     @Override
@@ -209,6 +214,9 @@ public class DashboardFragment extends Fragment {
                     values.put("otherInfo", otherInfo);
                     values.put("state", state);
                     db.insert("leave_list",null, values);
+
+                    db.close();
+                    databaseHelper.close();
                 }
                 break;
         }
@@ -253,11 +261,10 @@ public class DashboardFragment extends Fragment {
 
                                     /**本地数据库插入数据*/
                                     DatabaseHelper databaseHelper = new DatabaseHelper(getContext(), "app_data", null, 1, SQL.sql_create_leave_list);
-                                    databaseHelper.CreateTable();
                                     SQLiteDatabase db = databaseHelper.getWritableDatabase();
 
                                     Cursor cursor = db.query("leave_list", null, "type = ? AND beginTime = ? AND endTime = ?", new String[]{type, beginTime, endTime}, null, null, "id");
-                                    if (cursor.getCount() == 0) {
+                                    if (cursor.getCount() == 0) {           //无数据，插入数据
                                         ContentValues values = new ContentValues();
                                         values.put("title", title);
                                         values.put("type", type);
@@ -267,7 +274,19 @@ public class DashboardFragment extends Fragment {
                                         values.put("otherInfo", otherInfo);
                                         values.put("state", state);
                                         db.insert("leave_list",null, values);
+                                    } else {         //有数据，更新其中数据与服务器同步
+                                        ContentValues values = new ContentValues();
+                                        values.put("state", state);
+
+                                        if (title.equals("待批准请假条")) {
+                                            db.update("leave_list",values, "title = ? AND user = ? AND beginTime = ? AND endTime = ?", new String[]{"待批准请假条", belongUser, beginTime, endTime});
+                                        } else {
+                                            db.update("leave_list",values, "title = ? AND user = ? AND beginTime = ? AND endTime = ?", new String[]{"我的请假条", belongUser, beginTime, endTime});
+                                        }
                                     }
+                                    cursor.close();
+                                    db.close();
+                                    databaseHelper.close();
 
                                 }
                             } catch (Exception e) {
@@ -280,7 +299,8 @@ public class DashboardFragment extends Fragment {
 
                         }
                     });
-                    Thread.sleep(5000);
+
+                    Thread.sleep(10000);
                 }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -300,7 +320,7 @@ public class DashboardFragment extends Fragment {
         System.out.println(url);
 
         if (state == true) {
-            stateString = "通过";
+            stateString = "通过审核";
         } else {
             stateString = "未通过";
         }
@@ -310,19 +330,6 @@ public class DashboardFragment extends Fragment {
             HttpsUtil.getInstance().get(url, new HttpsUtil.OnRequestCallBack() {
                 @Override
                 public void onSuccess(String s) {
-                    if (s.equals("success")){
-                        /**本地数据库插入数据*/
-                        DatabaseHelper databaseHelper = new DatabaseHelper(getContext(), "app_data", null, 1, SQL.sql_create_leave_list);
-                        databaseHelper.CreateTable();
-                        SQLiteDatabase db = databaseHelper.getWritableDatabase();
-
-                        ContentValues values = new ContentValues();
-
-                        values.put("state", stateString);
-                        db.update("leave_list",null, "title = ? AND user = ? AND beginTime = ? AND endTime = ?", new String[]{"待批准请假条", user, beginTime, endTime});
-                    }
-
-                    System.out.println(s);
                     back[0] = s;
                 }
 
@@ -332,9 +339,24 @@ public class DashboardFragment extends Fragment {
                 }
             });
 
-            Thread.sleep(4000);
+            Thread.sleep(3000);
+
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        if (back[0].equals("success")){         //成功就插入信息
+            /**本地数据库插入数据*/
+            DatabaseHelper databaseHelper = new DatabaseHelper(getContext(), "app_data", null, 1, SQL.sql_create_leave_list);
+            SQLiteDatabase db = databaseHelper.getWritableDatabase();
+            databaseHelper.CreateTable(db);
+
+            ContentValues values = new ContentValues();
+            values.put("state", stateString);
+            db.update("leave_list",values, "title = ? AND user = ? AND beginTime = ? AND endTime = ?", new String[]{"待批准请假条", user, beginTime, endTime});
+
+            db.close();
+            databaseHelper.close();
         }
 
         return back[0];

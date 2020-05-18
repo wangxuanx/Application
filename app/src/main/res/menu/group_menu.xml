@@ -3,6 +3,11 @@
     <item
         android:id="@+id/group_info"
         android:title="群组信息"/>
+
+    <item
+        android:id="@+id/history_check"
+        android:title="历史签到"/>
+
     <item
         android:id="@+id/share_group"
         android:icon="@drawable/ic_assignment_black_24dp"

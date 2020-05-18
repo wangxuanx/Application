@@ -68,6 +68,7 @@
         android:background="@color/colorPrimary"/>
 
     <TextView
+        android:id="@+id/user_title"
         android:background="#fff"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

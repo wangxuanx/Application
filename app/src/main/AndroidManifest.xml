@@ -26,7 +26,9 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".ui.home.group.HandsSignActivity"></activity>
+        <activity android:name=".ui.home.group.AllSignUserActivity"></activity>
+        <activity android:name=".ui.home.group.HistoryCheckActivity" />
+        <activity android:name=".ui.home.group.HandsSignActivity" />
         <activity android:name=".ui.home.group.MainSignActivity" />
         <activity android:name=".ui.dashboard.LeaveActivity" />
         <activity

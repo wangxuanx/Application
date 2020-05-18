@@ -66,43 +66,11 @@ public class CreateGroupActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(String s) {
                             Log.d("create Group success", "create group success, groupId:" + s);
+                            finish();
                         }
                     });
 
 
-                    String url = "https://120.26.172.16:8443/AndroidTest/CreatGroup?groupName="+groupName+"&creatUser="+userName;
-                    System.out.println(url);
-                   /* HttpsUtil.getInstance().get(url, new HttpsUtil.OnRequestCallBack() {
-                        @Override
-                        public void onSuccess(String s) {
-                            System.out.println(s);
-                            if(s.equals("success register")){        //群组创建成功
-                                System.out.println("群组创建成功！！");
-
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        textView.setText("群组创建成功！！");
-                                    }
-                                });
-                                finish();
-                            } else {         //群组名已经存在
-                                System.out.println("该群组名已经存在！！");
-
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        textView.setText("该群组名已经存在！！");
-                                    }
-                                });
-                            }
-                        }
-
-                        @Override
-                        public void onFail(Exception e) {
-                            textView.setText("创建失败！请重试！");
-                        }
-                    });*/
                 }
 
             }

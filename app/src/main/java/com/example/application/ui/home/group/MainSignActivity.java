@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
@@ -21,11 +22,16 @@ import com.example.application.face.utils.ImageSaveUtil;
 import com.example.application.face.utils.Md5;
 import com.example.application.http.HttpsUtil;
 import com.example.application.http.SharedPrefUtil;
+import com.example.application.ui.SQL;
+import com.example.application.ui.home.sign.SignUser;
+import com.example.application.ui.home.sign.SignUserAdapter;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainSignActivity extends AppCompatActivity {
 
@@ -37,15 +43,18 @@ public class MainSignActivity extends AppCompatActivity {
     private TextView signName;
     private TextView signUser;
     private TextView signState;
-
+    private TextView userTitle;
     private Button button;
 
     private ListView listView;
+    private SignUserAdapter signUserAdapter;
+    private List<SignUser> userList = new ArrayList<>();
 
     private final int FACE = 100;
     private final int HANDS = 101;
     private int type;
 
+    private String title;
     private String sign_title;
     private String sign_create_user;
     private String sign_password;
@@ -57,10 +66,13 @@ public class MainSignActivity extends AppCompatActivity {
 
         init();          //初始化控件
 
+        title = getIntent().getStringExtra("title");
         type = getIntent().getIntExtra("type", 0);
         sign_title = getIntent().getStringExtra("name");
         sign_create_user = getIntent().getStringExtra("user");
         sign_password = getIntent().getStringExtra("password");
+
+        initCheckUser();        //获取签到的人
 
         if (type == FACE){
             setTitle("人脸签到");
@@ -73,10 +85,13 @@ public class MainSignActivity extends AppCompatActivity {
         signName.setText(sign_title);
         signUser.setText(sign_create_user);
 
-        /*if (sign_create_user.equals(SharedPrefUtil.getUserName(this))) {          //如果是本人 则不显示签到按钮
+        if (sign_create_user.equals(SharedPrefUtil.getUserName(this))) {          //如果是本人 则不显示签到按钮
             signState.setVisibility(View.GONE);
             button.setVisibility(View.GONE);
-        }*/
+        } else {
+            userTitle.setVisibility(View.GONE);
+            listView.setVisibility(View.GONE);
+        }
 
         button.setOnClickListener(new View.OnClickListener() {             //点击前往签到界面
             @Override
@@ -97,6 +112,7 @@ public class MainSignActivity extends AppCompatActivity {
         signName = findViewById(R.id.sign_name);
         signUser = findViewById(R.id.sign_user);
         signState = findViewById(R.id.sign_state);
+        userTitle = findViewById(R.id.user_title);
 
         button = findViewById(R.id.sign_button);
 
@@ -170,6 +186,7 @@ public class MainSignActivity extends AppCompatActivity {
         final String[] back = new String[1];
         DatabaseHelper databaseHelper = new DatabaseHelper(this, "app_data", null, 1, com.example.application.ui.SQL.sql_create_sign_list);
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
+        databaseHelper.CreateTable(db);
         ContentValues values = new ContentValues();
         values.put("state", 1);         //更新最新消息
         db.update("sign_list", values, "title = ? and type = ? and createUser = ?", new String[]{sign_title, String.valueOf(type), sign_create_user});
@@ -188,7 +205,37 @@ public class MainSignActivity extends AppCompatActivity {
             }
         });
 
+        db.close();
+        databaseHelper.close();
+
         return back[0];
+    }
+
+    private void initCheckUser() {           //从本地数据库获取已经签到的人
+
+        userList.clear();
+
+        DatabaseHelper databaseHelper = new DatabaseHelper(this, "app_data", null, 1, SQL.getCheckSql(title));
+        SQLiteDatabase db = databaseHelper.getWritableDatabase();
+        databaseHelper.CreateTable(db);
+
+        Cursor cursor = db.query(title+ "_check_user_list", null, null, null, null, null, "id");
+        if (!cursor.isAfterLast() && (cursor.getString(1) != null)) {
+            SignUser signUser = new SignUser();
+
+            signUser.setUserName(cursor.getString(1));
+            signUser.setRealName(cursor.getString(2));
+
+            userList.add(signUser);
+        }
+
+        signUserAdapter = new SignUserAdapter(this, R.layout.group_item, userList);
+        listView.setAdapter(signUserAdapter);
+        signUserAdapter.notifyDataSetChanged();
+
+        cursor.close();
+        db.close();
+        databaseHelper.close();
     }
 
 }

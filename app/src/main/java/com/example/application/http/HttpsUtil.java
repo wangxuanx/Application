@@ -43,6 +43,7 @@ public class HttpsUtil{
         }
         return httpsUtil;
     }
+
     public interface  OnRequestCallBack{
         void onSuccess(String s);
         void onFail(Exception e);
@@ -50,6 +51,7 @@ public class HttpsUtil{
 
 
     public void get(final String path, final OnRequestCallBack callBack){
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -94,15 +96,7 @@ public class HttpsUtil{
                     //4.添加一个主机名称校验器
                     conn.setHostnameVerifier(new HostnameVerifier() {
                         @Override
-                        public boolean verify(String hostname, SSLSession session) {
-                            return true;
-                            /*if (hostname.equals("120.26.172.16")) {
-                                return true;
-                            }else{
-                                    return false;
-                            }*/
-
-                        }
+                        public boolean verify(String hostname, SSLSession session) { return true; }
                     });
 
 

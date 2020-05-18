@@ -180,8 +180,8 @@ public class NotificationsFragment extends Fragment {
                 });
 
                 //删除登录信息
-                //SharedPrefUtil.removeAll(getActivity());
-                SharedPrefUtil.removeParam(getActivity(), SharedPrefUtil.FACE_STATE);
+                SharedPrefUtil.removeAll(getActivity());
+                //SharedPrefUtil.removeParam(getActivity(), SharedPrefUtil.FACE_STATE);
                 //跳转到登录界面
                 Intent intent = new Intent(getActivity(), LoginActivity.class);
                 startActivity(intent);
