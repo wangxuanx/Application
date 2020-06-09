@@ -32,26 +32,20 @@
         <activity android:name=".ui.home.group.MainSignActivity" />
         <activity android:name=".ui.dashboard.LeaveActivity" />
         <activity
-            android:name=".ui.home.group.GroupUserActivity"
-            android:parentActivityName=".ui.home.group.GroupActivity" />
+            android:name=".ui.home.group.GroupUserActivity" />
         <activity
             android:name=".ui.home.SignInActivity"
-            android:parentActivityName=".ui.home.group.GroupActivity"
             android:screenOrientation="unspecified" />
         <activity
-            android:name=".ui.home.CreateGroupActivity"
-            android:parentActivityName=".MainActivity" />
+            android:name=".ui.home.CreateGroupActivity" />
         <activity
-            android:name=".ui.home.AddGroupActivity"
-            android:parentActivityName=".MainActivity" />
+            android:name=".ui.home.AddGroupActivity" />
         <activity
-            android:name=".ui.home.group.ShareGroup"
-            android:parentActivityName=".ui.home.group.GroupActivity" />
+            android:name=".ui.home.group.ShareGroup" />
         <activity android:name=".ui.home.group.GroupActivity" />
         <activity
             android:name=".ui.home.SearchGroupActivity"
-            android:label="搜索群组"
-            android:parentActivityName=".MainActivity" />
+            android:label="搜索群组" />
         <activity android:name=".ui.home.scan.ScanActivity" />
 
         <provider

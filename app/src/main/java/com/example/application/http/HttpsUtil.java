@@ -127,7 +127,6 @@ public class HttpsUtil{
             }
         }).start();
 
-
     }
 
     public  static String  sendPost(String url, String parame, Map<String,Object> pmap) throws IOException, KeyManagementException, NoSuchAlgorithmException, NoSuchProviderException {

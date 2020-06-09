@@ -81,11 +81,18 @@
         android:layout_height="0.5dp"
         android:background="#c3c3c3"/>
 
-    <ListView
-        android:background="#fff"
-        android:id="@+id/sign_user_list"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_weight="1"/>
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/sign_user_list_swipe"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ListView
+            android:background="#fff"
+            android:id="@+id/sign_user_list"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_weight="1"/>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
 
 </LinearLayout>

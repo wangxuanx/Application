@@ -49,7 +49,12 @@ public class RegisterActivity extends AppCompatActivity {
                         public void onSuccess(String s) {
                             System.out.println(s);
                             if(s.equals("user already exist!")){
-                                Toast.makeText(RegisterActivity.this, "注册用户名已存在，请重新填写！", Toast.LENGTH_SHORT).show();
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(RegisterActivity.this, "注册用户名已存在，请重新填写！", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                             } else {
                                 /*Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                                 startActivity(intent);*/
@@ -59,12 +64,22 @@ public class RegisterActivity extends AppCompatActivity {
 
                         @Override
                         public void onFail(Exception e) {
-
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(RegisterActivity.this, "注册失败，请重试！", Toast.LENGTH_SHORT).show();
+                                }
+                            });
                         }
                     });
 
                 } else {
-                    Toast.makeText(RegisterActivity.this, "两次输入密码不一致！！！请重新输入！", Toast.LENGTH_SHORT).show();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(RegisterActivity.this, "两次输入密码不一致！！！请重新输入！", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
 
             }

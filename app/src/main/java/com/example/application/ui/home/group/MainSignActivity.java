@@ -2,6 +2,8 @@ package com.example.application.ui.home.group;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.ContentValues;
 import android.content.Intent;
@@ -46,6 +48,7 @@ public class MainSignActivity extends AppCompatActivity {
     private TextView userTitle;
     private Button button;
 
+    private SwipeRefreshLayout RefreshLayout;
     private ListView listView;
     private SignUserAdapter signUserAdapter;
     private List<SignUser> userList = new ArrayList<>();
@@ -72,8 +75,6 @@ public class MainSignActivity extends AppCompatActivity {
         sign_create_user = getIntent().getStringExtra("user");
         sign_password = getIntent().getStringExtra("password");
 
-        initCheckUser();        //获取签到的人
-
         if (type == FACE){
             setTitle("人脸签到");
         } else if (type == HANDS){
@@ -88,24 +89,46 @@ public class MainSignActivity extends AppCompatActivity {
         if (sign_create_user.equals(SharedPrefUtil.getUserName(this))) {          //如果是本人 则不显示签到按钮
             signState.setVisibility(View.GONE);
             button.setVisibility(View.GONE);
-        } else {
+
+            initCheckUser();
+            signUserAdapter = new SignUserAdapter(this, R.layout.check_user_item, userList);
+            listView.setAdapter(signUserAdapter);
+            signUserAdapter.notifyDataSetChanged();
+
+            RefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+
+                    initCheckUser();
+
+                    signUserAdapter = new SignUserAdapter(getApplicationContext(), R.layout.check_user_item, userList);
+                    listView.setAdapter(signUserAdapter);
+                    signUserAdapter.notifyDataSetChanged();
+
+                    RefreshLayout.setRefreshing(false);
+                }
+            });
+
+        } else {             //非本人 进行签到操作
             userTitle.setVisibility(View.GONE);
             listView.setVisibility(View.GONE);
+            RefreshLayout.setVisibility(View.GONE);
+
+            button.setOnClickListener(new View.OnClickListener() {             //点击前往签到界面
+                @Override
+                public void onClick(View view) {
+                    if (type == FACE){
+                        Intent intent = new Intent(MainSignActivity.this, FaceDetectActivity.class);
+                        startActivityForResult(intent, FACE);
+                    } else {
+                        Intent intent = new Intent(MainSignActivity.this, HandsSignActivity.class);
+                        intent.putExtra("password", sign_password);         //发送密码
+                        startActivityForResult(intent, HANDS);
+                    }
+                }
+            });
         }
 
-        button.setOnClickListener(new View.OnClickListener() {             //点击前往签到界面
-            @Override
-            public void onClick(View view) {
-                if (type == FACE){
-                    Intent intent = new Intent(MainSignActivity.this, FaceDetectActivity.class);
-                    startActivityForResult(intent, FACE);
-                } else {
-                    Intent intent = new Intent(MainSignActivity.this, HandsSignActivity.class);
-                    intent.putExtra("password", sign_password);         //发送密码
-                    startActivityForResult(intent, HANDS);
-                }
-            }
-        });
     }
 
     private void init(){
@@ -116,13 +139,13 @@ public class MainSignActivity extends AppCompatActivity {
 
         button = findViewById(R.id.sign_button);
 
+        RefreshLayout = findViewById(R.id.sign_user_list_swipe);
         listView = findViewById(R.id.sign_user_list);
 
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode){
             case FACE:          //人脸返回
                 if (resultCode == RESULT_OK){
@@ -146,8 +169,8 @@ public class MainSignActivity extends AppCompatActivity {
 
                                 if (score >= 80){          //分数高于80 通过人脸识别
 
-                                    String back = UpData();         //向数据库中修改数据
-                                    if (back.equals("success")){
+                                    //String back = UpData();         //向数据库中修改数据
+                                    if (UpData().equals("success")){
                                         signState.setText("已签到");
                                         button.setEnabled(false);
                                         button.setText("签到完成");
@@ -180,9 +203,11 @@ public class MainSignActivity extends AppCompatActivity {
                 }
                 break;
         }
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
-    private String UpData(){
+    protected String UpData(){
         final String[] back = new String[1];
         DatabaseHelper databaseHelper = new DatabaseHelper(this, "app_data", null, 1, com.example.application.ui.SQL.sql_create_sign_list);
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
@@ -205,6 +230,12 @@ public class MainSignActivity extends AppCompatActivity {
             }
         });
 
+        try {
+            Thread.sleep(1500);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         db.close();
         databaseHelper.close();
 
@@ -219,19 +250,20 @@ public class MainSignActivity extends AppCompatActivity {
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
         databaseHelper.CreateTable(db);
 
-        Cursor cursor = db.query(title+ "_check_user_list", null, null, null, null, null, "id");
-        if (!cursor.isAfterLast() && (cursor.getString(1) != null)) {
+        Cursor cursor = db.query(sign_title+ "_check_user_list", null, null, null, null, null, "id");
+        int count = cursor.getCount();
+        int i = 0;
+        while (i < count) {
+            cursor.moveToNext();
             SignUser signUser = new SignUser();
 
             signUser.setUserName(cursor.getString(1));
             signUser.setRealName(cursor.getString(2));
 
             userList.add(signUser);
-        }
 
-        signUserAdapter = new SignUserAdapter(this, R.layout.group_item, userList);
-        listView.setAdapter(signUserAdapter);
-        signUserAdapter.notifyDataSetChanged();
+            i++;
+        }
 
         cursor.close();
         db.close();

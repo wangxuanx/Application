@@ -28,11 +28,15 @@ public class SignUserAdapter extends ArrayAdapter<SignUser> {
         SignUser signUser = getItem(position);
 
         View view = LayoutInflater.from(getContext()).inflate(resourceId, null);
+
         TextView userName = view.findViewById(R.id.check_user_userName);
         TextView realName = view.findViewById(R.id.check_user_realName);
 
-        userName.setText(signUser.getUserName());
-        realName.setText(signUser.getRealName());
+        String user = signUser.getUserName();
+        String real = signUser.getRealName();
+
+        userName.setText(user);
+        realName.setText(real);
 
         return view;
     }

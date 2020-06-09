@@ -46,7 +46,7 @@ public class AllSignUserActivity extends AppCompatActivity {
 
     private void initData() {
 
-        DatabaseHelper databaseHelper = new DatabaseHelper(this, "app_data", null, 1, SQL.getCheckSql(title));
+        DatabaseHelper databaseHelper = new DatabaseHelper(this, "app_data", null, 1, SQL.getCheckSql(name));
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
         databaseHelper.CreateTable(db);
 

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -175,5 +176,17 @@ public class SignInActivity extends AppCompatActivity {
         SimpleDateFormat sd = new SimpleDateFormat("HH:mm:ss");         //"yyyy-MM-dd HH:mm:ss"
 
         return sd.format(date);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            System.out.println("按下返回键！！！");
+            intent.putExtra("name", "");
+            setResult(1, intent);
+            finish();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

@@ -17,6 +17,9 @@ import com.tencent.imsdk.TIMGroupManager;
 import com.tencent.imsdk.TIMGroupSystemElem;
 import com.tencent.imsdk.TIMGroupSystemElemType;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class AddGroupActivity extends AppCompatActivity {
@@ -45,7 +48,7 @@ public class AddGroupActivity extends AppCompatActivity {
             public void onClick(View view) {
                 System.out.println(title);
 
-                AddGroup(title, userName, groupID);
+                AddGroup(userName, groupID);       //加入群组
 
                 finish();
             }
@@ -59,9 +62,9 @@ public class AddGroupActivity extends AppCompatActivity {
         button = findViewById(R.id.add_group_button);
     }
 
-    private void AddGroup(String title, String userName, String group_Id){          //向服务器发送信息添加入本群组
+    private void AddGroup(String userName, String group_Id){          //向服务器发送信息添加入本群组
 
-        TIMGroupManager.getInstance().applyJoinGroup(group_Id, "some reason", new TIMCallBack() {
+        /*TIMGroupManager.getInstance().applyJoinGroup(group_Id, "some reason", new TIMCallBack() {
             @Override
             public void onError(int i, String s) {
                 Log.e("tag", "applyJoinGroup err code = " + i + ", desc = " + s);
@@ -71,30 +74,59 @@ public class AddGroupActivity extends AppCompatActivity {
             public void onSuccess() {
                 Log.i("tag", "applyJoinGroup success");
             }
-        });
+        });*/
 
-
-        /*String url = "https://120.26.172.16:8443/AndroidTest/GroupAddUser?groupName="+title+"&addUser="+userName;
+        group_Id = group_Id.replace("#", "%23");
+        String url = "https://120.26.172.16:8443/AndroidTest/AddUserToGroup?groupid="+group_Id+"&username="+userName;
         System.out.println(url);
 
         HttpsUtil.getInstance().get(url, new HttpsUtil.OnRequestCallBack() {
             @Override
             public void onSuccess(String s) {
-                System.out.println(s);
-                if(s.equals("add user success")){
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(AddGroupActivity.this, "加入群组成功！", Toast.LENGTH_SHORT).show();
+                try {
+                    JSONObject jsonObject = new JSONObject(s);        //应答JSON数据
+
+                    String result = jsonObject.getString("ActionStatus");       //获取处理结果
+                    if (result.equals("OK")) {
+                        JSONArray jsonArray = jsonObject.getJSONArray("MemberList");        //获取加入的列表
+
+                        JSONObject jsonObject1 = jsonArray.getJSONObject(0);       //获取第一个
+
+                        int RESULT = Integer.parseInt(jsonObject1.getString("Result"));       //获取结果
+
+                        if (RESULT == 0) {        //加入失败
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(AddGroupActivity.this, "加入群组失败！", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        } else if (RESULT == 1) {          //加入成功
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(AddGroupActivity.this, "加入群组成功！", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        } else {          //已经为群成员
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(AddGroupActivity.this, "已经是群组成员！", Toast.LENGTH_SHORT).show();
+                                }
+                            });
                         }
-                    });
-                } else {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(AddGroupActivity.this, "加入群组失败！", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    } else {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(AddGroupActivity.this, "加入群组失败！", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
 
@@ -102,6 +134,6 @@ public class AddGroupActivity extends AppCompatActivity {
             public void onFail(Exception e) {
 
             }
-        });*/
+        });
     }
 }

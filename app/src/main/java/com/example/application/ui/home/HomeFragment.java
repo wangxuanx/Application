@@ -25,8 +25,10 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.example.application.MainActivity;
 import com.example.application.R;
 import com.example.application.face.utils.DatabaseHelper;
 import com.example.application.http.HttpsUtil;
@@ -76,7 +78,9 @@ public class HomeFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        initCheckData();         //获取签到数据
+        System.out.println("启动了！！！");
+
+        initCheckData(getContext());         //获取签到数据
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -90,6 +94,8 @@ public class HomeFragment extends Fragment {
         swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.blue));
 
         initList();          //显示已加入的群组
+
+        swipeRefreshData();
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {       //点击事件
             @Override
@@ -120,7 +126,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        new_group.start();        //启动扫描线程
+        initNewMessage(getContext());
 
         return root;
     }
@@ -263,30 +269,35 @@ public class HomeFragment extends Fragment {
             int i = listView.getCount();        //获取list的长度
 
             for (int j = 0; j < i; j++){
-                View view = this.listView.getChildAt(j);
+                View view = listView.getChildAt(j);
 
                 TextView textView = view.findViewById(R.id.group_describe);
                 TextView textView1 = view.findViewById(R.id.new_message_view);
                 textView1.setVisibility(View.GONE);
                 textView.setTextColor(Color.rgb(98, 98, 98));
             }
+        } else {
+            IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+            if(result != null) {
+                if(result.getContents() == null) {
+                    Toast.makeText(getContext(), "扫描失败！！", Toast.LENGTH_LONG).show();
+                } else {
+                    String group_info = result.getContents();         //扫描得到到内容
+                    String[] info = group_info.split(",");         //分割开群名称与群id
+                    if (info.length == 2) {
+                        Intent intent = new Intent(getActivity(), AddGroupActivity.class);
+                        intent.putExtra("groupName", info[0]);
+                        intent.putExtra("groupid", info[1]);
+                        startActivity(intent);
+                    } else {
+                        Toast.makeText(getContext(), "扫描失败！！", Toast.LENGTH_LONG).show();
+                    }
+                }
+            } else {
+                super.onActivityResult(requestCode, resultCode, data);
+            }
         }
 
-        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        if(result != null) {
-            if(result.getContents() == null) {
-                Toast.makeText(getContext(), "扫描失败！！", Toast.LENGTH_LONG).show();
-            } else {
-                String group_info = result.getContents();         //扫描得到到内容
-                String[] info = group_info.split(",");         //分割开群名称与群id
-                Intent intent = new Intent(getActivity(), AddGroupActivity.class);
-                intent.putExtra("groupName", info[0]);
-                intent.putExtra("groupid", info[1]);
-                startActivity(intent);
-            }
-        } else {
-            super.onActivityResult(requestCode, resultCode, data);
-        }
     }
 
     private void swipeRefreshData(){          //下拉刷新列表
@@ -326,10 +337,12 @@ public class HomeFragment extends Fragment {
     }
 
 
-    Thread new_group = new Thread(new Runnable() {
-        @Override
-        public void run() {
-            try {
+    private void initNewMessage(Context context) {
+
+        Thread new_group = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
 
                     /**接收申请加群消息*/
                     /**接收新消息*/
@@ -362,12 +375,12 @@ public class HomeFragment extends Fragment {
                                         freshList(groupId, textElem.getText());       //刷新显示新消息
 
 
-                                        String sql = SQL.getChatSql(SQL.getGroupName(getContext(), groupId));
+                                        String sql = SQL.getChatSql(getGroupName(context, groupId));
 
-                                        DatabaseHelper databaseHelper = new DatabaseHelper(getContext(), "app_data_chat", null, 1, sql);       //向数据库插入数据
+                                        DatabaseHelper databaseHelper = new DatabaseHelper(context, "app_data_chat", null, 1, sql);       //向数据库插入数据
                                         SQLiteDatabase db = databaseHelper.getWritableDatabase();
                                         databaseHelper.CreateTable(db);        //创建新表
-                                        Cursor cursor = db.query(SQL.getGroupName(getContext(), groupId) + "_group_chat_list", null, "seq = ?", new String[]{String.valueOf(message.getSeq())}, null, null, "id");
+                                        Cursor cursor = db.query(SQL.getGroupName(context, groupId) + "_group_chat_list", null, "seq = ?", new String[]{String.valueOf(message.getSeq())}, null, null, "id");
                                         if (cursor.getCount() == 0) {
                                             if (message.isSelf() == true) {       //判断是发出还是接收
                                                 ContentValues values = new ContentValues();
@@ -376,15 +389,29 @@ public class HomeFragment extends Fragment {
                                                 values.put("user", message.getSender());           //用户
                                                 values.put("type", Msg.SEND);             //发送的消息
 
-                                                db.insert(SQL.getGroupName(getContext(), groupId) + "_group_chat_list", null, values);
+                                                db.insert(SQL.getGroupName(context, groupId) + "_group_chat_list", null, values);
+
+
                                             } else {
                                                 ContentValues values = new ContentValues();
                                                 values.put("text", textElem.getText());        //内容
                                                 values.put("seq", String.valueOf(message.getSeq()));             //消息序列号
                                                 values.put("user", message.getSender());           //用户
-                                                values.put("type", Msg.RECEIVE);             //发送的消息
+                                                values.put("type", Msg.RECEIVE);             //收到的消息
 
-                                                db.insert(SQL.getGroupName(getContext(), groupId) + "_group_chat_list", null, values);
+                                                db.insert(SQL.getGroupName(context, groupId) + "_group_chat_list", null, values);
+
+                                                DatabaseHelper databaseHelper1 = new DatabaseHelper(context, "group_list", null, 1, SQL.sql_create_group_list);       //向数据库插入数据
+                                                SQLiteDatabase db1 = databaseHelper1.getWritableDatabase();
+                                                databaseHelper.CreateTable(db1);        //创建新表
+
+                                                ContentValues values1 = new ContentValues();
+                                                values1.put("last_message", textElem.getText());        //内容
+
+                                                db1.update("group_list", values1, "group_id = ?", new String[]{groupId});
+
+                                                db1.close();
+                                                databaseHelper1.close();
                                             }
                                         }
 
@@ -422,11 +449,15 @@ public class HomeFragment extends Fragment {
                         }
                     });
 
-            } catch (Exception e){
-                e.printStackTrace();
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
             }
-        }
-    });
+        });
+
+        new_group.start();
+    }
+
 
 
     //}
@@ -453,7 +484,7 @@ public class HomeFragment extends Fragment {
      * 获取ListView对象
      */
 
-    private void initCheckData(){           //初始化签到数据
+    private void initCheckData(Context context){           //初始化签到数据
         String list = "";
 
         if (List.length() != 0){
@@ -477,7 +508,7 @@ public class HomeFragment extends Fragment {
                                 Log.i("log", "获取签到数据成功");
                                 System.out.println(s);
                                 /**创建签到的数据库*/
-                                DatabaseHelper databaseHelper = new DatabaseHelper(getContext(), "app_data", null, 1, SQL.sql_create_sign_list);
+                                DatabaseHelper databaseHelper = new DatabaseHelper(context, "app_data", null, 1, SQL.sql_create_sign_list);
                                 SQLiteDatabase db = databaseHelper.getWritableDatabase();
                                 databaseHelper.CreateTable(db);
 
@@ -490,15 +521,15 @@ public class HomeFragment extends Fragment {
                                         System.out.println(object.toString());
                                         String title = object.getString("signName");
                                         String type = object.getString("signType");
-                                        String dead_time = object.getString("dead_time").substring(0, object.getString("dead_time").length() - 2);
+                                        String dead_time = object.getString("dead_time");
                                         String password = object.getString("password");
                                         String groupName = object.getString("signGroup");
                                         String createUser = object.getString("signCreatUser");
 
-                                        System.out.println(dead_time);
+                                        System.out.println("截止时间：" + dead_time);
                                         long deadline_time = SQL.DataToLang(dead_time);           //将时间转化为long格式
 
-                                        Cursor cursor = db.query("sign_list", null, "deadline_time = ?", new String[]{String.valueOf(deadline_time)}, null, null, "id");
+                                        Cursor cursor = db.query("sign_list", null, "deadline_time = ? AND title = ?", new String[]{String.valueOf(deadline_time), title}, null, null, "id");
                                         if (cursor.getCount() == 0) {
                                             ContentValues values = new ContentValues();
                                             values.put("title", title);
@@ -510,12 +541,11 @@ public class HomeFragment extends Fragment {
                                             values.put("state", 0);
 
                                             db.insert("sign_list", null, values);
-
                                         }
 
                                         cursor.close();
-                                        db.close();
-                                        databaseHelper.close();
+                                        /*db.close();
+                                        databaseHelper.close();*/
                                     }
                                 } catch (Exception e){
                                     e.printStackTrace();
@@ -550,12 +580,12 @@ public class HomeFragment extends Fragment {
                                             String name = checkList.get(i);
                                             JSONObject jsonObject1 = jsonObject.getJSONObject(name);         //获取单个群组json
                                             int num = jsonObject1.getInt("total");
-                                            for (int j = 0; j < num; j++){           //获取一个签到的所有签到用户
+                                            for (int j = 1; j <= num; j++){           //获取一个签到的所有签到用户
                                                 JSONObject jsonObject2 = jsonObject1.getJSONObject(String.valueOf(j));
                                                 String userName = jsonObject2.getString("userName");
                                                 String realName = jsonObject2.getString("realName");
 
-                                                DatabaseHelper databaseHelper = new DatabaseHelper(getContext(), "app_data", null, 1, SQL.getCheckSql(name));
+                                                DatabaseHelper databaseHelper = new DatabaseHelper(context, "app_data", null, 1, SQL.getCheckSql(name));
                                                 SQLiteDatabase db = databaseHelper.getWritableDatabase();
                                                 databaseHelper.CreateTable(db);
 
@@ -642,8 +672,7 @@ public class HomeFragment extends Fragment {
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
         databaseHelper.CreateTable(db);
         Cursor cursor = db.query("sign_list", null, null, null, null, null, "id");
-        int num = cursor.getCount();
-        cursor.moveToNext();
+        cursor.moveToFirst();
         while (!cursor.isAfterLast() && (cursor.getString(1) != null)) {
             String checkName = cursor.getString(1);         //签到名称
 
@@ -654,6 +683,7 @@ public class HomeFragment extends Fragment {
             DatabaseHelper databaseHelper1 = new DatabaseHelper(getContext(), "app_data", null, 1, SQL.getCheckSql(groupName));
             SQLiteDatabase db1 = databaseHelper1.getWritableDatabase();
             databaseHelper.CreateTable(db1);*/
+
             cursor.moveToNext();
         }
 
@@ -663,6 +693,30 @@ public class HomeFragment extends Fragment {
 
         return list;
     }
+
+    private static String getGroupName(Context context, String groupID){
+        String name = "";
+
+        DatabaseHelper databaseHelper = new DatabaseHelper(context, "group_list", null, 1, SQL.sql_create_group_list);       //向数据库插入数据
+        SQLiteDatabase db = databaseHelper.getWritableDatabase();
+        databaseHelper.CreateTable(db);
+        Cursor cursor = db.query("group_list", null, "group_id = ?", new String[]{groupID}, null, null, "id");
+
+        int i = cursor.getCount();
+        if (i != 0){
+            cursor.moveToLast();
+            System.out.println(cursor);
+            name = cursor.getString(2);
+        }
+
+        cursor.close();
+        db.close();
+        databaseHelper.close();
+
+        return name;
+    }
+
+
 
     @Override
     public void onStart() {

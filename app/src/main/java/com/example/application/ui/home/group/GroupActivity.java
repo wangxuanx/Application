@@ -311,13 +311,14 @@ public class GroupActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == FACE || requestCode == HANDS){
+        if (requestCode == FACE || requestCode == HANDS) {
+
             String password = data.getStringExtra("password");         //获取密码
             String name = data.getStringExtra("name");
             int hour = data.getIntExtra("hour", 0);
             int minute = data.getIntExtra("minute", 0);
             int second = data.getIntExtra("second", 0);
-            leftTime = hour*3600 + minute*60 + second;
+            leftTime = hour * 3600 + minute * 60 + second;
 
             signName.setText(name);
             Sign_Title = name;
@@ -325,11 +326,11 @@ public class GroupActivity extends AppCompatActivity {
             Sign_Password = password;
         }
 
-        switch (requestCode){
+        switch (requestCode) {
             case FACE:           //从创建人脸返回
 
                 setTitle(title);
-                if(resultCode == 0){
+                if (resultCode == 0) {
                     System.out.println("从人脸返回！！！");
                     type = FACE;
 
@@ -342,7 +343,7 @@ public class GroupActivity extends AppCompatActivity {
                 break;
             case HANDS:           //从创建手势签到返回
                 setTitle(title);
-                if (resultCode == 0){       //返回值为0表示创建成功 1表示创建失败
+                if (resultCode == 0) {       //返回值为0表示创建成功 1表示创建失败
                     System.out.println("从手势返回！！！");
                     type = HANDS;
 
@@ -480,32 +481,36 @@ public class GroupActivity extends AppCompatActivity {
         DatabaseHelper databaseHelper = new DatabaseHelper(this, "app_data", null, 1, com.example.application.ui.SQL.sql_create_sign_list);
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
         Cursor cursor = db.query("sign_list", null, "groupName = ? and deadline_time > ?", new String[]{title, String.valueOf(curTime.getTime() / 1000)}, null, null, "id");       //搜索可用的签到
-        cursor.moveToFirst();
+        if (cursor.getCount() != 0){
 
-        while(!cursor.isAfterLast() && (cursor.getString(1) != null)){
-            String title = cursor.getString(1);            //获取title
-            String signtype = cursor.getString(2);
-            String deadline_time = cursor.getString(3);
-            String password = cursor.getString(4);
-            String groupName = cursor.getString(5);
-            String createUser = cursor.getString(6);
-            int state = cursor.getInt(7);
+            cursor.moveToFirst();
 
-            if (state != 1){           //不为1说明还未签到
-                System.out.println(Long.parseLong(deadline_time));
-                System.out.println(curTime.getTime() / 1000);
-                long Time = Long.parseLong(deadline_time) - curTime.getTime() / 1000;
-                leftTime = Time;
+            while(!cursor.isAfterLast() && (cursor.getString(1) != null)){
+                String title = cursor.getString(1);            //获取title
+                String signtype = cursor.getString(2);
+                String deadline_time = cursor.getString(3);
+                String password = cursor.getString(4);
+                String groupName = cursor.getString(5);
+                String createUser = cursor.getString(6);
+                int state = cursor.getInt(7);
 
-                signName.setText(title);
-                Sign_Title = title;
-                Sign_Create_User = createUser;
-                type = Integer.parseInt(signtype);
-                handler.postDelayed(update_thread, 1000);
+                if (state != 1){           //不为1说明还未签到
+                    System.out.println(Long.parseLong(deadline_time));
+                    System.out.println(curTime.getTime() / 1000);
+                    long Time = Long.parseLong(deadline_time) - curTime.getTime() / 1000;
+                    leftTime = Time;
+
+                    signName.setText(title);
+                    Sign_Title = title;
+                    Sign_Create_User = createUser;
+                    type = Integer.parseInt(signtype);
+                    Sign_Password = password;
+                    handler.postDelayed(update_thread, 1000);
+                }
+                System.out.println(title+" "+type+" "+deadline_time+" "+password+" "+groupName+" "+createUser+" "+state);
+
+                cursor.moveToNext();
             }
-            System.out.println(title+" "+type+" "+deadline_time+" "+password+" "+groupName+" "+createUser+" "+state);
-
-            cursor.moveToNext();
         }
 
         cursor.close();
