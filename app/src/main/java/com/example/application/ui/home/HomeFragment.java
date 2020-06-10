@@ -111,8 +111,6 @@ public class HomeFragment extends Fragment {
                 view.findViewById(R.id.new_message_view).setVisibility(View.GONE);
                 TextView textView = view.findViewById(R.id.group_describe);
                 textView.setTextColor(Color.rgb(67,67,67));
-
-                Toast.makeText(getContext(), view.getTag().toString(), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -501,7 +499,7 @@ public class HomeFragment extends Fragment {
                     while (true) {
 
                         String url = "https://120.26.172.16:8443/AndroidTest/GetSign?grouplist="+ List;
-                        //System.out.println(url);
+
                         HttpsUtil.getInstance().get(url, new HttpsUtil.OnRequestCallBack() {
                             @Override
                             public void onSuccess(String s) {
@@ -518,7 +516,7 @@ public class HomeFragment extends Fragment {
 
                                     for (int i = 1; i <= size; i++){
                                         JSONObject object = jsonObject.getJSONObject(String.valueOf(i));          //获取签到的object
-                                        System.out.println(object.toString());
+                                        //System.out.println(object.toString());
                                         String title = object.getString("signName");
                                         String type = object.getString("signType");
                                         String dead_time = object.getString("dead_time");
@@ -526,11 +524,18 @@ public class HomeFragment extends Fragment {
                                         String groupName = object.getString("signGroup");
                                         String createUser = object.getString("signCreatUser");
 
+                                        /**
+                                         * 建立签到用户表
+                                         */
+                                        DatabaseHelper databaseHelper1 = new DatabaseHelper(context, "app_data", null, 1, SQL.getCheckSql(title));
+                                        databaseHelper1.close();
+
                                         System.out.println("截止时间：" + dead_time);
                                         long deadline_time = SQL.DataToLang(dead_time);           //将时间转化为long格式
 
                                         Cursor cursor = db.query("sign_list", null, "deadline_time = ? AND title = ?", new String[]{String.valueOf(deadline_time), title}, null, null, "id");
                                         if (cursor.getCount() == 0) {
+
                                             ContentValues values = new ContentValues();
                                             values.put("title", title);
                                             values.put("type", type);
@@ -578,16 +583,18 @@ public class HomeFragment extends Fragment {
 
                                         for (int i = 0; i < checkList.size(); i++){
                                             String name = checkList.get(i);
+
                                             JSONObject jsonObject1 = jsonObject.getJSONObject(name);         //获取单个群组json
                                             int num = jsonObject1.getInt("total");
+
+                                            DatabaseHelper databaseHelper = new DatabaseHelper(context, "app_data", null, 1, SQL.getCheckSql(name));
+                                            SQLiteDatabase db = databaseHelper.getWritableDatabase();
+                                            databaseHelper.CreateTable(db);
+
                                             for (int j = 1; j <= num; j++){           //获取一个签到的所有签到用户
                                                 JSONObject jsonObject2 = jsonObject1.getJSONObject(String.valueOf(j));
                                                 String userName = jsonObject2.getString("userName");
                                                 String realName = jsonObject2.getString("realName");
-
-                                                DatabaseHelper databaseHelper = new DatabaseHelper(context, "app_data", null, 1, SQL.getCheckSql(name));
-                                                SQLiteDatabase db = databaseHelper.getWritableDatabase();
-                                                databaseHelper.CreateTable(db);
 
                                                 Cursor cursor = db.query(name+ "_check_user_list", null, "userName = ?", new String[]{userName}, null, null, "id");
                                                 if (cursor.getCount() == 0) {

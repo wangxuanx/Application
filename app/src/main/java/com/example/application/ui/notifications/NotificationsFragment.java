@@ -35,6 +35,7 @@ import com.example.application.MainActivity;
 import com.example.application.R;
 import com.example.application.face.FaceRegistActivity;
 import com.example.application.http.SharedPrefUtil;
+import com.example.application.ui.ClearData;
 import com.example.application.ui.login.LoginActivity;
 import com.leon.lib.settingview.LSettingItem;
 import com.tencent.imsdk.TIMCallBack;
@@ -183,6 +184,10 @@ public class NotificationsFragment extends Fragment {
                 SharedPrefUtil.removeAll(getActivity());
                 //SharedPrefUtil.removeParam(getActivity(), SharedPrefUtil.FACE_STATE);
                 //跳转到登录界面
+
+                ClearData clearData = new ClearData(getActivity());             //清理数据库
+                clearData.clearDatabases();
+
                 Intent intent = new Intent(getActivity(), LoginActivity.class);
                 startActivity(intent);
                 getActivity().finish();

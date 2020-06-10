@@ -246,9 +246,8 @@ public class MainSignActivity extends AppCompatActivity {
 
         userList.clear();
 
-        DatabaseHelper databaseHelper = new DatabaseHelper(this, "app_data", null, 1, SQL.getCheckSql(title));
+        DatabaseHelper databaseHelper = new DatabaseHelper(this, "app_data", null, 1, SQL.getCheckSql(sign_title));
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
-        databaseHelper.CreateTable(db);
 
         Cursor cursor = db.query(sign_title+ "_check_user_list", null, null, null, null, null, "id");
         int count = cursor.getCount();
